@@ -1,0 +1,384 @@
+/* Leave as is */
+.previewStyles {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: calc(var(--target-width) * 1px + var(--width-offset));
+  height: calc(var(--target-height) * 1px + var(--height-offset));
+  transform-origin: top left;
+  overflow: hidden;
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+}
+
+.previewStyles .container {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  width: calc(var(--original-width) * 1px);
+  height: calc(var(--original-height) * 1px);
+
+  position: absolute;
+  left: 50%;
+  top: var(--top-offset);
+  transform: translate(var(--translate-x), -50%) scale(var(--scale-factor));
+  transform-origin: center;
+}
+
+.previewStyles[data-fit-full="true"] .container {
+  --scale-factor: calc(1 * max(calc(var(--target-width) / var(--original-width)), calc(var(--target-height) / var(--original-height))));
+}
+
+.previewStyles[data-fit-full="false"] .container {
+  --scale-factor: calc(var(--target-width) / var(--original-width));
+}
+
+.container {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+canvas {
+  border: none;
+  background-color: #ffffff;
+}
+
+/* Add any other necessary styles here... */
+#contextMenu {
+  display: none;
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  z-index: 1000;
+  width: 150px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Style for individual menu items */
+.menu-item {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background-color: #3c3c3c;
+}
+
+/* Button styles */
+.custom-button {
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(to right, #1a1d64, #20267d);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 20px;
+  font-family: "Comfortaa", sans-serif; /* Matches Tailwind's 'font-comfortaa' */
+  text-align: center;
+  display: block;
+  margin: 0 auto;
+  width: fit-content;
+  transition: background 0.3s ease-in-out;
+}
+
+.custom-button:hover {
+  background: linear-gradient(to bottom left, #1a1d64, #20267d); /* Hover Effect */
+}
+
+.save-button {
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(to right, #12766e, #124e4a);
+  color: white;
+  padding: 25px;
+  height: fit-content;
+  border-radius: 8px;
+  font-size: 20px;
+  font-family: "Comfortaa", sans-serif; /* Matches Tailwind's 'font-comfortaa' */
+  font-weight: 450px;
+  font-size: 60px;
+  text-align: center;
+  display: block;
+  margin: 0 auto;
+  margin-top: 100px;
+  width: fit-content;
+  transition: background 0.3s ease-in-out;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.save-button:hover {
+  background: linear-gradient(to bottom left, #12766e, #124e4a); /* Hover Effect */
+}
+
+.custom-whiteAndOff-button {
+  cursor: pointer;
+  /* background: linear-gradient(to right, #a19ad3, #5d3f6a); */
+  background-color: #808080;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 20px;
+  font-family: "Comfortaa", sans-serif; /* Matches Tailwind's 'font-comfortaa' */
+  text-align: center;
+  display: block;
+  margin: 0 auto;
+  width: fit-content;
+  transition: background 0.3s ease-in-out;
+}
+
+.close-icon {
+  position: fixed;
+  right: 60px;
+  top: 50px;
+  font-size: 50px;
+  font-weight: bold;
+  font-family: "Comfortaa", cursive;
+  cursor: pointer;
+  z-index: 9999;
+  color: #fff;
+  transition: transform 0.2s ease, color 0.3s ease;
+}
+
+/* Hover effect */
+.close-icon:hover {
+  color: #ff4d4d; /* Soft red */
+  transform: scale(1.2);
+}
+
+/* Settings Screen Container */
+.settings-screen {
+  z-index: -1;
+  display: none;
+  flex-direction: column;
+  width: 1024px;
+  height: 1024px;
+  background: linear-gradient(to right, #4b0082, #292b5b);
+  color: white;
+  overflow: auto;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
+
+/* Settings Section Headings */
+.settings-section {
+  padding: 40px;
+  background: linear-gradient(to right, #4b0082, #292b5b);
+  color: #ffffff;
+  border-radius: 12px;
+  margin-top: 50px;
+}
+
+.settings-section-title {
+  text-align: center;
+  font-family: "Chewy", cursive;
+  font-size: 80px;
+  font-weight: 500;
+  margin-bottom: 30px;
+  background: linear-gradient(to right, #ffcb6f, #ffe6b8);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Image Upload Containers */
+.image-upload-container {
+  display: inline-block;
+  width: fit-content;
+  height: fit-content;
+  margin-bottom: 40px;
+  padding: 10px;
+  border: 1px solid #feb781;
+  border-radius: 12px;
+  background: linear-gradient(to right, #ff9900, #ffcc66);
+
+  /* Centering it */
+  margin: 0 auto; /* Works for block elements */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centers content inside */
+  justify-content: center;
+}
+
+.image-upload-preview {
+  display: block;
+  margin: 0 auto 20px;
+  width: 250px;
+  height: 250px;
+  border-radius: 12px;
+  border: 1px solid black;
+  object-fit: cover;
+}
+
+/* Tooltip Button Containers */
+.tooltip-button-container {
+  position: relative;
+  margin-bottom: 40px;
+  padding: 20px;
+  border: 1px solid #feb781;
+  border-radius: 12px;
+  background: linear-gradient(to right, #ff9900, #ffcc66);
+  text-align: center;
+
+  width: fit-content;
+  height: fit-content;
+  /* Centering it */
+  margin: 0 auto; /* Works for block elements */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centers content inside */
+  justify-content: center;
+}
+
+.toggle-button-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Sound Effects Section */
+.sound-effect-row {
+  margin-bottom: 20px;
+  padding: 20px;
+  border: 1px solid #feb781;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: linear-gradient(to right, #ff9900, #ffcc66);
+}
+
+.sound-effect-label {
+  flex: 1;
+  font-family: "Comfortaa", cursive;
+  font-size: 40px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #292b5b;
+}
+
+.sound-effect-controls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sound-effect-audio {
+  width: 250px;
+  height: 40px;
+  margin-left: 47%;
+  outline: none;
+}
+
+.image-upload-input {
+  display: none;
+}
+
+* {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.heading {
+  font-weight: 450;
+  font-size: 80px;
+}
+
+.screen {
+  position: relative;
+  top: 0px;
+  left: 0px;
+  z-index: -1;
+  display: none;
+  flex-direction: column;
+  width: 1024px;
+  height: 1024px;
+  background: linear-gradient(to right, #4b0082, #292b5b);
+  color: white;
+  overflow: scroll;
+  justify-content: center;
+  justify-items: center;
+  text-align: center;
+}
+
+.itemAddScreen {
+  z-index: -1;
+  display: none;
+  flex-direction: column;
+  width: 1024px;
+  height: 1024px;
+  background: linear-gradient(to right, #4b0082, #292b5b);
+  position: absolute; /* Ensure positioning matches */
+  left: 0px;
+  top: 0px;
+  color: white;
+  overflow: auto; /* Match overflow behavior */
+}
+
+.closeBtn {
+  position: absolute;
+  right: 60px;
+  top: 50px;
+  font-weight: 450;
+  font-size: 50px;
+  cursor: pointer;
+  z-index: 9999;
+}
+
+/* General styling for input fields and textareas */
+.styled-input,
+.styled-textarea {
+  width: 100%; /* Full width of container */
+  padding: 15px 20px; /* Comfortable padding */
+  font-size: 3rem; /* Responsive font size */
+  border: 2px solid #ccc; /* Light border */
+  border-radius: 8px; /* Rounded corners */
+  outline: none; /* Remove default focus outline */
+  background-color: #f8f8f8; /* Soft background */
+  transition: all 0.3s ease-in-out;
+  font-family: "Comfortaa", cursive;
+}
+
+/* Input hover and focus effect */
+.styled-input:hover,
+.styled-textarea:hover,
+.styled-input:focus,
+.styled-textarea:focus {
+  border-color: #ff9900;
+  box-shadow: 0px 4px 8px rgba(0, 123, 255, 0.2);
+  background-color: #ffffff;
+}
+
+/* Style for textarea */
+.styled-textarea {
+  resize: none; /* Prevent resizing */
+  font-size: 1.3rem; /* Slightly smaller text than inputs */
+  height: 10rem; /* Fixed height */
+  width: 52rem; /* Fixed width */
+}
+
+img,
+div {
+  -webkit-user-drag: none; /* Disable dragging in Safari */
+}

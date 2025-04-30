@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Ensures that non-ASCII characters like those of Japanese or Chinese are correctly displayed in the browser -->
+  <meta charset="UTF-8" />
+
+  <!-- Sets the page's width to that of the screen with no zoom -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Google Font: Chewy and Comfortaa -->
+  <link href="https://fonts.googleapis.com/css2?family=Chewy&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&display=swap" rel="stylesheet" />
+
+  <title>Join the Words</title>
+</head>
+
+<body>
+  <!-- Add the appropriate id to the div below -->
+  <!-- Leave as is -->
+  <div id="whatsWrongHere" class="previewStyles">
+    <div class="container">
+      <!-- Canvas for pixel perfect clicks & screenshots -->
+      <canvas id="gameCanvas" style="position: absolute; left: 0px; top: 0px; opacity: 0" width="1024"
+        height="1024"></canvas>
+
+      <!-- Background -->
+      <img id="background" style="position: absolute; left: 0px; top: 0px" src="assets/background.webp"
+        style="z-index: 9" width="1024" height="1024" />
+
+      <!-- Information Screen -->
+      <img id="gameTooltip" src="assets/instructionsTemplate.webp"
+        style="position: absolute; left: 0px; top: 0px; z-index: 0; display: none" width="1024" height="1024" />
+
+      <!-- Title -->
+      <div
+        style="cursor: default; position: absolute; left: 0px; top: 100px; width: 1024px; display: flex; justify-content: center; text-align: center; z-index: 4001; color: #d3d3d3">
+        <h1 id="title"
+          style="word-wrap: break-word; display: none; font-weight: 450; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 80px">
+          Join The Words
+      </div>
+
+      <!-- Description -->
+      <div id="description"
+        style="cursor: default; position: absolute; left: 120px; top: 290px; font-weight: 400; font-size: 45px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 4001; color: #d3d3d3; word-wrap: break-word; width: 800px; display: none">
+        See the picture, check letters, and fill in the blanks!</div>
+
+      <!-- Refresh Button -->
+      <img id="refreshBtn" src="./assets/images/refreshButton.webp"
+        style="position: absolute; left: -90px; top: 50px; cursor: pointer; z-index: 4001; display: none" width="60"
+        height="60" />
+
+      <!-- Edit Mode Button -->
+      <img id="editModeBtn" src="./assets/images/editButton.webp"
+        style="position: absolute; left: -90px; top: 150px; cursor: pointer; z-index: 4001" width="60" height="60" />
+
+      <!--  Settings Button -->
+      <img id="settingsBtn" src="./assets/images/settingsButton.webp"
+        style="position: absolute; left: -90px; top: 250px; cursor: pointer; z-index: 4001; display: none" width="60"
+        height="60" />
+
+      <!-- Add Button -->
+      <img id="addItemsBtn" src="./assets/images/addButton.webp"
+        style="position: absolute; left: -90px; top: 350px; cursor: pointer; z-index: 4001; display: none" width="60"
+        height="60" />
+
+      <!--  Delete Button -->
+      <img id="deleteBtn" src="./assets/images/deleteButton.webp"
+        style="position: absolute; left: -90px; top: 450px; cursor: pointer; z-index: 9999; display: none" width="60"
+        height="60" />
+      <div id="binTooltipRectangle"
+        style="position: absolute; left: -80px; top: 520px; width: 0; height: 0; z-index: 4000; display: none; border-left: 25px solid transparent; border-right: 25px solid transparent; border-bottom: 50px solid rgb(30, 30, 30)">
+      </div>
+      <div id="binTooltip"
+        style="position: absolute; left: -100px; top: 550px; z-index: 4001; cursor: default; z-index: 4001; font-weight: 250; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 30px; padding: 15px; display: none; background-color: rgb(30, 30, 30); color: #d3d3d3; border: 1px solid #d3d3d3">
+        Drop an element on the bin to delete it!</div>
+
+      <!--  Save Button -->
+      <img id="saveBtn" src="./assets/images/saveButton.webp"
+        style="position: absolute; left: -90px; top: 550px; cursor: pointer; z-index: 4001; display: none" width="60"
+        height="60" />
+
+      <!-- Button -->
+      <div id="btnDiv" style="position: absolute; left: 50px; top: 50px; display: inline-block; z-index: 4002">
+        <div id="resizeBox0TL"
+          style="position: absolute; left: -6px; top: -6px; width: 14px; height: 14px; cursor: nwse-resize; visibility: hidden; border-radius: 100%; background-color: white; border: 1px solid red; z-index: 4001">
+        </div>
+        <div id="resizeBox0TR"
+          style="position: absolute; right: -6px; top: -6px; width: 14px; height: 14px; cursor: nesw-resize; visibility: hidden; border-radius: 100%; background-color: white; border: 1px solid red; z-index: 4001">
+        </div>
+        <div id="resizeBox0BL"
+          style="position: absolute; left: -6px; bottom: -6px; width: 14px; height: 14px; cursor: nesw-resize; visibility: hidden; border-radius: 100%; background-color: white; border: 1px solid red; z-index: 4001">
+        </div>
+        <div id="resizeBox0BR"
+          style="position: absolute; right: -6px; bottom: -6px; width: 14px; height: 14px; cursor: nwse-resize; visibility: hidden; border-radius: 100%; background-color: white; border: 1px solid red; z-index: 4001">
+        </div>
+
+        <img id="btn" src="./assets/images/infoDark.webp"
+          style="cursor: pointer; border: 1px solid transparent; width: 60px; height: 60px" />
+      </div>
+
+
+      <!-- Items -->
+      <div id="gameContainer" style="display: flex;flex-direction: column; gap: 10px;">
+
+      </div>
+
+
+
+      <!-- Items Left -->
+      <div id="itemsLeftNumber"
+        style="position: absolute; left: 205px; top: 59px; font-weight: 500; font-size: 38px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 10; cursor: default">
+      </div>
+
+      <!-- Settings Screen -->
+      <div id="settingsScreen" class="settings-screen">
+        <span id="settingsCloseBtn" class="close-icon">&times;</span>
+
+        <!-- Images Section -->
+        <div class="settings-section">
+          <h1 class="settings-section-title">Background Image</h1>
+          <div class="image-upload-container">
+            <img id="bgImage" src="assets/background.webp" class="image-upload-preview" />
+            <label for="bgImgInput" class="custom-button">Upload Image</label>
+            <input type="file" id="bgImgInput" accept="image/*" class="image-upload-input" />
+          </div>
+        </div>
+
+        <!-- Tooltip Section -->
+        <div class="settings-section">
+          <h1 class="settings-section-title">Tooltip Button Visibility</h1>
+          <div class="tooltip-button-container">
+            <div class="toggle-button-wrapper">
+              <span id="btnOff" class="custom-whiteAndOff-button"
+                style="position: absolute; font-size: 30px; top: 20px; left: 30px">Off</span>
+              <span id="btnOn" class="custom-button" style="margin-left: 180px; font-size: 30px">On</span>
+            </div>
+          </div>
+
+          <h1 class="settings-section-title">Tooltip Button Color</h1>
+          <div class="tooltip-button-container">
+            <div class="toggle-button-wrapper">
+              <span id="btnWhite" class="custom-whiteAndOff-button"
+                style="position: absolute; font-size: 30px; top: 20px; left: 30px">White</span>
+              <span id="btnBlack" class="custom-button" style="margin-left: 180px; font-size: 30px">Black</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sound Effects Section -->
+        <div class="settings-section">
+          <h1 class="settings-section-title">Sound Effects</h1>
+
+          <div class="sound-effect-row">
+            <h2 class="sound-effect-label">Tooltip Button Click</h2>
+            <div class="sound-effect-controls">
+              <audio id="audioElement1" src="assets/audio/click.mp3" controls class="sound-effect-audio"></audio>
+              <label for="audioInput1" class="custom-button" style="margin-left: 52%; margin-top: 10px">Upload
+                Sound</label>
+              <input type="file" id="audioInput1" accept="audio/*" style="display: none" />
+            </div>
+          </div>
+
+          <div class="sound-effect-row">
+            <h2 class="sound-effect-label">Item Click</h2>
+            <div class="sound-effect-controls">
+              <audio id="audioElement2" src="assets/audio/collect.mp3" controls class="sound-effect-audio"></audio>
+              <label for="audioInput2" class="custom-button" style="margin-left: 52%; margin-top: 10px">Upload
+                Sound</label>
+              <input type="file" id="audioInput2" accept="audio/*" style="display: none" />
+            </div>
+          </div>
+
+          <div class="sound-effect-row">
+            <h2 class="sound-effect-label">Win</h2>
+
+            <div class="sound-effect-controls">
+              <audio id="audioElement3" src="assets/audio/win2.mp3" controls class="sound-effect-audio"></audio>
+              <label for="audioInput3" class="custom-button" style="margin-left: 52%; margin-top: 10px">Upload
+                Sound</label>
+              <input type="file" id="audioInput3" accept="audio/*" style="display: none" />
+            </div>
+          </div>
+
+          <div class="sound-effect-row">
+            <h2 class="sound-effect-label">Delete</h2>
+            <div class="sound-effect-controls">
+              <audio id="audioElement4" src="./assets/audios/delete.mp3" controls class="sound-effect-audio"></audio>
+              <label for="audioInput4" class="custom-button" style="margin-left: 52%; margin-top: 10px">Upload
+                Sound</label>
+              <input type="file" id="audioInput4" accept="audio/*" style="display: none" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save Screen -->
+      <form id="saveScreen" class="screen">
+        <span id="saveCloseBtn" class="close-icon">&times;</span>
+
+        <!-- Name -->
+        <div class="flex-col" style="margin-top: 5rem">
+          <h1 class="settings-section-title">Name</h1>
+          <input id="nameInput" name="gameName" type="text" class="styled-input" required />
+        </div>
+
+        <!-- Description -->
+        <div class="flex-col">
+          <h1 class="settings-section-title">Description</h1>
+          <textarea name="gameDescription" id="descriptionBox" class="styled-textarea" required
+            style="font-size: 2rem"></textarea>
+        </div>
+
+        <!-- Category -->
+        <div class="flex-col">
+          <h1 class="settings-section-title">Category</h1>
+          <input id="categoryInput" name="gameCategory" type="text" class="styled-input" required />
+        </div>
+
+        <!-- Tags -->
+        <div class="flex-col">
+          <h1 class="settings-section-title">Tags</h1>
+          <div class="flex-row" style="gap: 1rem">
+            <input id="tagsInput" name="tagInput" type="text" class="styled-input" />
+            <label id="addTagBtn" for="tagsInput" type="button" class="custom-button"
+              style="height: fit-content; padding: 30px; font-size: 30px">Add</label>
+          </div>
+          <div id="tags" class="flex-col"></div>
+        </div>
+
+        <!-- Configurable Settings -->
+        <div class="flex-col">
+          <h1 class="settings-section-title">Configurable Settings</h1>
+          <div class="flex-row" style="gap: 1rem">
+            <input id="settingsInput" name="settingInput" type="text" class="styled-input" />
+            <label id="addSettingBtn" for="settingsInput" type="button" class="custom-button"
+              style="height: fit-content; padding: 30px; font-size: 30px">Add</label>
+          </div>
+          <div id="configSettings" class="flex-col"></div>
+        </div>
+
+        <!-- Save Button -->
+        <label id="saveGameBtn" type="submit" class="save-button">Save</label>
+
+        <div style="margin-bottom: 250px"></div>
+      </form>
+
+      <!-- Items Addition Screen -->
+      <div id="itemsAddition" class="itemAddScreen">
+        <span id="itemsAdditionCloseBtn" class="close-icon">&times;</span>
+
+        <h1 class="settings-section-title">Add a new Item</h1>
+
+        <div class="image-upload-container">
+          <img id="addableImg" src="./assets/images/questionMark.webp" class="image-upload-preview" />
+          <label for="addableImgInput" class="custom-button">Upload Image</label>
+          <input type="file" id="addableImgInput" accept="image/*" class="image-upload-input" />
+        </div>
+
+        <!-- Accept Button -->
+        <label id="addItemBtn" type="submit" class="save-button">Add</label>
+        <div style="margin-bottom: 200px"></div>
+
+      </div>
+
+      <!-- Context Menu -->
+      <div id="contextMenu"
+        style="width: fit-content; z-index: 9999; font-weight: 250; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 30px; padding: 15px; display: none; background-color: rgb(30, 30, 30); color: #d3d3d3; border: 1px solid #d3d3d3">
+        <div class="menu-item" id="changeImage">Change Image</div>
+      </div>
+
+      <input type="file" id="changeImageInput" accept="image/*" style="display: none" />
+
+      <!-- Save Button -->
+      <button id="saveChangesBtn" class="save-button" disabled
+        style="position: absolute; bottom: -130px; left: 0px; z-index: 9999; font-size: 35px; width: 1024px">Save
+        Changes</button>
+
+      <!-- Audios -->
+      <audio preload="auto" id="collectSound" src="assets/audio/collect.mp3"></audio>
+      <audio preload="auto" id="winSound" src="assets/audio/win2.mp3"></audio>
+      <audio preload="auto" id="wrongSound" src="./assets/audios/wrong.mp3"></audio>
+      <audio preload="auto" id="clickSound" src="assets/audio/click.mp3"></audio>
+      <audio preload="auto" id="deleteSound" src="./assets/audios/delete.mp3"></audio>
+    </div>
+  </div>
+
+  <script>
+    function captureScreenshot() {
+      const configData = JSON.parse(decodeURIComponent(urlParams.get("configdata")));
+
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+
+      // Wait until all images are loaded before drawing
+      let loadedImagesCount = 0;
+      const imagesToLoad = [background, item1, item2, item3, item4, btn, itemsLeft];
+
+      // Function to check if all images are loaded
+      function checkImagesLoaded() {
+        loadedImagesCount++;
+
+        if (loadedImagesCount === imagesToLoad.length) {
+          drawCanvas();
+
+          // Use requestAnimationFrame to wait for the canvas update to be completed & send the screenshot
+          requestAnimationFrame(() => {
+            window.parent.postMessage({ type: "screenshot", data: canvas.toDataURL(), id: urlParams.get("id"), url: window.location.origin }, parentUrl);
+          });
+        }
+      }
+
+      function defaultInitialization() {
+        // Background
+        ctx.drawImage(imagesToLoad[0], 0, 0, 1024, 1024);
+
+        // Items
+        ctx.drawImage(imagesToLoad[1], 170, 750, 175, 175);
+        ctx.drawImage(imagesToLoad[2], 880, 280, 105, 146);
+        ctx.drawImage(imagesToLoad[3], 120, 410, 205, 100);
+        ctx.drawImage(imagesToLoad[4], 770, 100, 160, 160);
+
+        // Btn
+        ctx.drawImage(imagesToLoad[5], 50, 50, 60, 60);
+
+        // Items Left
+        ctx.drawImage(imagesToLoad[6], 900, 30, 87, 65);
+
+        ctx.font = "400 40px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+        ctx.fillStyle = "#000";
+
+        ctx.fillText(itemsLeftNumber.innerText, 957, 77);
+      }
+
+      // Function to draw the images on the canvas
+      function drawCanvas() {
+        if (configData) {
+          // Background
+          // if (configData.background) ctx.drawImage(configData.background, 0, 0, 1024, 1024);
+          // else
+          ctx.drawImage(imagesToLoad[0], 0, 0, 1024, 1024);
+
+          // Items
+          if (configData.elements) {
+            for (let i = 0; i < configData.elements.length; i++) {
+              const element = configData.elements[i];
+
+              const width = element.width;
+              const height = element.height;
+              const scale = element.scale;
+
+              const x = parseFloat(element.x.split("px")[0]);
+              const y = parseFloat(element.y.split("px")[0]);
+
+              // ctx.drawImage(element.image, x, y, width * scale, height * scale);
+              ctx.drawImage(imagesToLoad[i + 1], x, y, width * scale, height * scale);
+            }
+          } else {
+            ctx.drawImage(imagesToLoad[1], 170, 750, 175, 175);
+            ctx.drawImage(imagesToLoad[2], 880, 280, 105, 146);
+            ctx.drawImage(imagesToLoad[3], 120, 410, 205, 100);
+            ctx.drawImage(imagesToLoad[4], 770, 100, 160, 160);
+          }
+
+          // Btn
+          if (configData.tooltip) {
+            if (configData.tooltip.showTooltip) {
+              // const src = configData.tooltip.btnSrc;
+              const x = configData.tooltip.btnX;
+              const y = configData.tooltip.btnY;
+              const scale = configData.tooltip.btnScale;
+
+              // ctx.drawImage(src, x, y, 60 * scale, 60 * scale);
+              ctx.drawImage(imagesToLoad[5], x, y, 60 * scale, 60 * scale);
+            }
+          } else {
+            ctx.drawImage(imagesToLoad[5], 50, 50, 60, 60);
+          }
+
+          // Items Left
+          ctx.drawImage(imagesToLoad[6], 900, 30, 87, 65);
+
+          ctx.font = "400 40px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+          ctx.fillStyle = "#000";
+
+          if (configData.uncommon && configData.uncommon.remainingItems) ctx.fillText(configData.uncommon.remainingItems, 957, 77);
+          else ctx.fillText(itemsLeftNumber.innerText, 957, 77);
+        }
+
+        // No config data provided
+        else {
+          defaultInitialization();
+        }
+      }
+
+      // Add 'load' event listeners for each image to ensure they are fully loaded
+      imagesToLoad.forEach((image) => {
+        image.onload = checkImagesLoaded;
+      });
+
+      // For images that might already be cached, call checkImagesLoaded directly
+      imagesToLoad.forEach((image) => {
+        if (image.complete) checkImagesLoaded();
+      });
+    }
+
+    // Get the URLSearchParams
+    const urlParams = new URLSearchParams(window.location.search);
+    const parentUrl = urlParams.get("parenturl");
+
+    // Get all the DOM images here
+    const background = document.getElementById("background");
+
+    const item1 = document.getElementById("item1");
+    const item2 = document.getElementById("item2");
+    const item3 = document.getElementById("item3");
+    const item4 = document.getElementById("item4");
+
+    const btn = document.getElementById("btn");
+
+    const itemsLeft = document.getElementById("itemsLeft");
+    const itemsLeftNumber = document.getElementById("itemsLeftNumber");
+
+    const title = document.getElementById("title");
+    const description = document.getElementById("description");
+
+    // Disable the context menu
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    // Detect key downs
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") window.parent.postMessage("ArrowRight", parentUrl);
+      else if (e.key === "ArrowLeft") window.parent.postMessage("ArrowLeft", parentUrl);
+    });
+
+    // Variables to store touch positions
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    // Threshold to determine a valid swipe (in pixels)
+    const swipeThreshold = 200;
+
+    // Function to detect swipe direction
+    function detectSwipe() {
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+
+      // Horizontal
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        // Right
+        if (deltaX > swipeThreshold) window.parent.postMessage("ArrowLeft", parentUrl);
+        // Left
+        else if (deltaX < -swipeThreshold) window.parent.postMessage("ArrowRight", parentUrl);
+      }
+    }
+
+    // Detect touch start (on mobile devices)
+    document.addEventListener("touchstart", (e) => {
+      // Get initial touch position
+      const touch = e.touches[0];
+      touchStartX = touch.pageX;
+      touchStartY = touch.pageY;
+    });
+
+    // Detect touch end (finalize swipe detection)
+    document.addEventListener("touchend", (e) => {
+      // Get final touch position
+      const touch = e.changedTouches[0];
+      touchEndX = touch.pageX;
+      touchEndY = touch.pageY;
+
+      // Determine swipe direction
+      detectSwipe();
+    });
+
+    // Get the div defined above by its id
+    var div = document.getElementById("whatsWrongHere");
+
+    // Initiailze size variables for the above div based on what game settings the Author has set
+    var targetWidth = urlParams.get("tw");
+    var targetHeight = urlParams.get("th");
+    var originalWidth = 1024; // The original size of the game, as it was programmed. This is not a user input.
+    var originalHeight = 1024; // The original size of the game, as it was programmed. This is not a user input.
+    var fitFull = "false";
+
+    // Now, set the size attributes of the above div
+    div.style.setProperty("--target-width", targetWidth);
+    div.style.setProperty("--target-height", targetHeight);
+    div.style.setProperty("--original-width", originalWidth);
+    div.style.setProperty("--original-height", originalHeight);
+    div.setAttribute("data-fit-full", fitFull);
+
+    // Editing properties
+    let isEditingGame = true;
+    if (urlParams.get("isediting") === "true") isEditingGame = true;
+
+    let widthOffset = "0px";
+    let heightOffset = "0px";
+    let translateX = "-50%";
+    let topOffset = "50%";
+
+    if (isEditingGame) {
+      widthOffset = "50px";
+      heightOffset = "100px";
+      translateX = "-47.6%";
+      topOffset = "45%";
+    }
+
+    div.style.setProperty("--width-offset", widthOffset);
+    div.style.setProperty("--height-offset", heightOffset);
+    div.style.setProperty("--translate-x", translateX);
+    div.style.setProperty("--top-offset", topOffset);
+
+    // Determine if the game needs to be played at this point
+    var snapshot = urlParams.get("snapshot");
+    if (snapshot === "true") captureScreenshot();
+
+    function populateNextEmptyInput(letter, parentDiv) {
+      // Get all the letter-input elements within the same parent div
+      const inputs = parentDiv.querySelectorAll('.letter-input');
+      for (const input of inputs) {
+        if (input.value === '') {
+          input.value = letter;
+          break;
+        }
+      }
+    }
+
+    // Add click listeners to all blocks
+    document.querySelectorAll('span[data-letter]').forEach(block => {
+      block.addEventListener('click', () => {
+        const letter = block.getAttribute('data-letter');
+
+        // Find the parent div of the clicked letter block
+        const parentDiv = block.closest('.item1, .item2,.item3'); // Adjust the selector to match the div class
+
+        populateNextEmptyInput(letter, parentDiv);
+      });
+    });
+
+  </script>
+
+  <script src="script.js" type="module"></script>
+  <script src="./modules/audioUpload.js" type="module"></script>
+  <script src="./modules/contextMenu.js" type="module"></script>
+  <script src="./modules/dragHandlers.js" type="module"></script>
+  <script src="./modules/editMode.js" type="module"></script>
+  <script src="./modules/imageUpload.js" type="module"></script>
+  <script src="./modules/resizeHandlers.js" type="module"></script>
+  <script src="./modules/tooltip.js" type="module"></script>
+  <script src="./modules/utils.js" type="module"></script>
+</body>
+
+</html>
