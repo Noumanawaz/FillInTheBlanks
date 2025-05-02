@@ -1,416 +1,501 @@
-import { handleAudioUpload } from "../modules/audioUpload.js";
-import { handleItemContextMenu } from "../modules/contextMenu.js";
-import { handleDragStart, handleDragEnd } from "../modules/dragHandlers.js";
-import { handleEditModeButtonClick, handleSettingsButtonClick, handleSettingsCloseButtonClick, handleAddItemsButtonClick, handleAddItemsCloseButtonClick, handleSaveButtonClick, handleSaveCloseButtonClick, addTagOrSetting } from "../modules/editMode.js";
-import { handleSingleImageUpload, handleChangeImageUpload, handleImageUpload } from "../modules/imageUpload.js";
-import { handleResizeStart } from "../modules/resizeHandlers.js";
-import { handleButtonClick, handleDescriptionInput, handleDescriptionKeyDown, handleTitleInput, handleTitleKeyDown, btnOffHandler, btnOnHandler, btnBlackHandler, btnWhiteHandler } from "../modules/tooltip.js";
-import { playSound, pauseSound, hideScreen, handleDownScaling, handleUpScaling, handleElementClick, addItemOnScreen, disallowDelete } from "../modules/utils.js";
-const Data = [
-  {
-    image: "./assets/apple.webp",
-    audio: "./assets/audio/munch.mp3",
-    answer: "APPLE",
-    letters: ["A", "P", "L", "P", "B", "E"],
-    letterColors: ["#e74c3c", "#3498db", "#27ae60", "#9b59b6", "#f39c12", "#e67e22"],
-  },
+import { handleAudioUpload } from "./modules/audioUpload.js";
+import { handleItemContextMenu } from "./modules/contextMenu.js";
+import { handleDragStart, handleDragEnd } from "./modules/dragHandlers.js";
+import { handleEditModeButtonClick, handleSettingsButtonClick, handleSettingsCloseButtonClick, handleAddItemsButtonClick, handleAddItemsCloseButtonClick, handleSaveButtonClick, handleSaveCloseButtonClick, addTagOrSetting } from "./modules/editMode.js";
+import { handleSingleImageUpload, handleChangeImageUpload } from "./modules/imageUpload.js";
+import { handleResizeStart } from "./modules/resizeHandlers.js";
+import { handleButtonClick, handleDescriptionInput, handleDescriptionKeyDown, handleTitleInput, handleTitleKeyDown, btnOffHandler, btnOnHandler, btnBlackHandler, btnWhiteHandler } from "./modules/tooltip.js";
+import { playSound, hideScreen, handleDownScaling, handleUpScaling, handleElementClick, disallowDelete } from "./modules/utils.js";
 
-  {
-    image: "./assets/bee.webp",
-    audio: "./assets/audio/buzz.mp3",
-    answer: "BEE",
-    letters: ["E", "H", "G", "I", "B", "E"],
-    letterColors: ["#f39c12", "#9b59b6", "#2ecc71", "#e74c3c", "#3498db", "#e67e22"],
-  },
-
-  {
-    image: "./assets/cat.webp",
-    audio: "./assets/audio/meow.mp3",
-    answer: "CAT",
-    letters: ["A", "T", "W", "C", "T", "O"],
-    letterColors: ["#3498db", "#e74c3c", "#9b59b6", "#f39c12", "#27ae60", "#e67e22"],
-  },
-
-  {
-    image: "./assets/dog.webp",
-    audio: "./assets/audio/woof.mp3",
-    answer: "DOG",
-    letters: ["Q", "O", "G", "D", "R", "S"],
-    letterColors: ["#e74c3c", "#3498db", "#27ae60", "#9b59b6", "#f39c12", "#e67e22"],
-  },
-
-  {
-    image: "./assets/kite.webp",
-    audio: "./assets/audio/woosh.wav",
-    answer: "KITE",
-    letters: ["T", "O", "K", "E", "I", "S"],
-    letterColors: ["#27ae60", "#3498db", "#9b59b6", "#e74c3c", "#f39c12", "#e67e22"],
-  },
-];
 // ------------------ //
 //  HELPER FUNCTIONS  //
 // ------------------ //
+function initializeDropzones() {
+  document.querySelectorAll(".dropzone").forEach((zone) => {
+    zone.removeEventListener("dragover", handleDragOver);
+    zone.removeEventListener("dragleave", handleDragLeave);
+    zone.removeEventListener("drop", handleDrop);
 
+    zone.addEventListener("dragover", handleDragOver);
+    zone.addEventListener("dragleave", handleDragLeave);
+    zone.addEventListener("drop", handleDrop);
+  });
+}
+
+function makeItemsDraggable() {
+  // Function to handle making an element draggable when resize handles are visible
+  function setUpDraggableElement(element) {
+    // Get the resize handles for this element
+    const resizeHandles = Array.from(document.querySelectorAll(`[id^="resizeBox${element.id.replace("divItem", "")}"]`));
+
+    // Check if any resize handle is visible
+    if (resizeHandles.some((handle) => handle && window.getComputedStyle(handle).visibility === "visible")) {
+      // Make this element draggable
+      element.draggable = true;
+
+      // Remove existing listeners to avoid duplicates
+      element.removeEventListener("dragstart", handleElementDragStart);
+      element.removeEventListener("dragend", handleElementDragEnd);
+
+      // Add new drag listeners
+      element.addEventListener("dragstart", handleElementDragStart);
+      element.addEventListener("dragend", handleElementDragEnd);
+    }
+
+    // Make sure it's not draggable if handles aren't visible
+    else element.draggable = false;
+  }
+
+  // Handler for drag start
+  function handleElementDragStart(e) {
+    if (!isEditing.value) return;
+
+    // Set data transfer
+    e.dataTransfer.setData("text/plain", this.id);
+    e.dataTransfer.effectAllowed = "move";
+
+    // Set visual cue
+    this.style.opacity = "0.5";
+    isDragging.value = this.id;
+  }
+
+  // Handler for drag end
+  function handleElementDragEnd() {
+    if (!isEditing.value) return;
+
+    // Reset visual state
+    this.style.opacity = "1";
+    isDragging.value = false;
+  }
+
+  // Make words in the word pool draggable
+  document.querySelectorAll("#wordPool > div").forEach(setUpDraggableElement);
+
+  // Make the category headers draggable
+  document.querySelectorAll("#categoryTableHead > div").forEach((header) => {
+    const updateHeader = (a, b) => {
+      header.style.opacity = a;
+      isDragging.value = b;
+    };
+
+    if (isEditing.value) {
+      header.draggable = true;
+
+      header.addEventListener("dragstart", (e) => {
+        e.dataTransfer.setData("text/plain", header.id); // Use full ID (e.g., "th-Fruits")
+        updateHeader("0.5", header.id); // Use full ID
+      });
+
+      header.addEventListener("dragend", () => updateHeader("1", false));
+    } else header.draggable = false;
+  });
+
+  // Set up document to accept drops anywhere
+  document.body.addEventListener("dragover", (e) => {
+    if (!isEditing.value) return;
+    e.preventDefault(); // Allow drop
+
+    return false;
+  });
+
+  document.body.addEventListener("drop", (e) => {
+    if (!isEditing.value) return;
+    e.preventDefault();
+
+    const elementId = e.dataTransfer.getData("text/plain");
+    const draggedElement = document.getElementById(elementId);
+
+    if (!draggedElement) return;
+
+    // Position the element at drop location - Need to adjust for any offset from the original mousedown position
+    draggedElement.style.position = "absolute";
+    draggedElement.style.left = `${e.clientX}px`;
+    draggedElement.style.top = `${e.clientY}px`;
+
+    // If it's a word from a category, move it to the document body so it can be freely positioned
+    if (draggedElement.parentElement.classList.contains("dropzone")) document.body.appendChild(draggedElement);
+    return false;
+  });
+}
+
+document.querySelectorAll(".word").forEach((word) => word.addEventListener("dragstart", (e) => e.dataTransfer.setData("text/plain", e.target.id)));
+
+function handleDragOver(e) {
+  e.preventDefault();
+  this.style.backgroundColor = "#e0e0e0";
+}
+
+function toggleBouncing(isTooltipOpen) {
+  document.querySelectorAll(".word").forEach((word) => {
+    // Stop the bouncing animation & trigger reflow to reset the animation
+    if (isTooltipOpen) {
+      word.style.animation = "none";
+      void word.offsetHeight;
+    }
+
+    // Resume the bouncing animation
+    else word.style.animation = "bounce 1.2s infinite alternate ease-in-out";
+  });
+}
+
+const handleDragLeave = () => (this.style.backgroundColor = "");
+
+function handleDrop(e) {
+  e.preventDefault();
+  this.style.backgroundColor = "";
+
+  const wordId = e.dataTransfer.getData("text/plain");
+  const wordEl = document.getElementById(wordId);
+
+  if (!wordEl) {
+    console.error(`Element with id "${wordId}" not found.`);
+    return;
+  }
+
+  // Green
+  if (categoryMap[this.id]?.includes(wordEl.textContent.trim())) {
+    this.appendChild(wordEl);
+    score += 10;
+    droppedWords++;
+  }
+
+  // Red
+  else {
+    wordEl.style.backgroundColor = "#f7c5c5";
+    score -= 5;
+  }
+  document.getElementById("scoreDisplay").textContent = `Score: ${score}`;
+  if (droppedWords === totalWords) {
+    setTimeout(() => {
+      alert("🎉 You win! Final Score: " + score);
+    }, 100);
+  }
+}
+
+const categoryMap = { Fruits: ["Apple", "Banana", "Cherry", "Lemon"], Animals: ["Dolphin", "Eagle", "Frog"], Objects: ["Kite", "Guitar", "House", "Notebook", "Ocean"] };
+
+// ------------------- //
+//  CATEGORY ADDITION  //
+// ------------------- //
+window.addCategoryColumn = function (name, words = []) {
+  // Add new category column - fix window.addCategoryColumn function to work with divs
+  if (!name || typeof name !== "string") {
+    console.error("Invalid category name:", name);
+    return;
+  }
+
+  const id = name.trim().replace(/\s+/g, "-"); // Replace spaces with hyphens for consistency
+  categoryMap[id] = words;
+
+  const headerRow = document.querySelector("#categoryTableHead");
+  const bodyRow = document.querySelector("#categoryTableBody");
+
+  // Create header div with absolute positioning
+  const headerDiv = document.createElement("div");
+  headerDiv.id = `th-${id}`;
+  headerDiv.innerText = name;
+  headerDiv.className = "category-header";
+  headerDiv.style.cssText = ` position: absolute; padding: 10px; width: 150px; text-align: center; font-weight: bold; border: 1px solid #000; background-color: #f0f0f0; cursor: move; z-index: 10; left: ${headerRow.children.length * 170}px;`;
+  headerRow.appendChild(headerDiv);
+
+  // Create body div with absolute positioning
+  const bodyDiv = document.createElement("div");
+  bodyDiv.className = "dropzone";
+  bodyDiv.id = id;
+  bodyDiv.style.cssText = `position: absolute; width: 150px; min-height: 150px; border: 1px solid #000; background-color: white; overflow-y: auto; z-index: 5; left: ${bodyRow.children.length * 170}px; top: ${headerDiv.offsetHeight + 5}px;`;
+  bodyRow.appendChild(bodyDiv);
+
+  // Add drag functionality to the header
+  makeHeaderDraggable(headerDiv, bodyDiv);
+
+  // Reattach drop event handlers
+  initializeDropzones();
+};
+
+function makeHeaderDraggable(headerDiv, bodyDiv) {
+  function dragMouseDown(e) {
+    if (!isEditing.value) return;
+    e.preventDefault();
+
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+
+    headerDiv.style.zIndex = "2000";
+    bodyDiv.style.zIndex = "1999";
+
+    headerDiv.style.opacity = bodyDiv.style.opacity = "0.8";
+
+    document.onmousemove = elementDrag;
+    document.onmouseup = closeDragElement;
+  }
+
+  function elementDrag(e) {
+    e.preventDefault();
+    const parentRect = headerDiv.parentElement.getBoundingClientRect();
+
+    const newX = e.clientX - parentRect.left - offsetX;
+    const newY = e.clientY - parentRect.top - offsetY;
+
+    moveAt(newX, newY);
+  }
+
+  function moveAt(pageX, pageY) {
+    headerDiv.style.left = bodyDiv.style.left = `${pageX}px`;
+    headerDiv.style.top = `${pageY}px`;
+    bodyDiv.style.top = `${pageY + headerDiv.offsetHeight + 5}px`;
+  }
+
+  function closeDragElement() {
+    headerDiv.style.opacity = bodyDiv.style.opacity = "1";
+    headerDiv.style.zIndex = "10";
+    bodyDiv.style.zIndex = "5";
+
+    document.onmousemove = document.onmouseup = null;
+
+    if (areChangesSaved && areChangesSaved.value) {
+      window.parent.postMessage({ type: "unsaved changes", gameId: urlParams.get("gameid"), url: window.location.origin }, parentUrl);
+      areChangesSaved.value = false;
+      toggleSaveChangesBtn();
+    }
+  }
+
+  let offsetX, offsetY;
+  headerDiv.onmousedown = dragMouseDown;
+}
+
+function updateLayoutForFreeMovement() {
+  const categoryTableHead = document.getElementById("categoryTableHead");
+  const categoryTableBody = document.getElementById("categoryTableBody");
+
+  // Update container styles
+  if (categoryTableHead) {
+    categoryTableHead.style.position = "relative";
+    categoryTableHead.style.height = "50px";
+    categoryTableHead.style.width = "100%";
+  }
+
+  if (categoryTableBody) {
+    categoryTableBody.style.position = "relative";
+    categoryTableBody.style.minHeight = "200px";
+    categoryTableBody.style.width = "100%";
+  }
+
+  // Convert existing headers and dropzones to absolute positioning
+
+  document.querySelectorAll("#categoryTableHead > div").forEach((header, index) => {
+    header.style.position = "absolute";
+    header.style.width = "150px";
+    header.style.left = index * 170 + "px";
+    header.className = "category-header";
+
+    // Find corresponding dropzone
+    const categoryId = header.id.replace("th-", "");
+    const dropzone = document.getElementById(categoryId);
+
+    if (dropzone) {
+      dropzone.style.position = "absolute";
+      dropzone.style.width = "150px";
+      dropzone.style.left = index * 170 + "px";
+      dropzone.style.top = header.offsetHeight + 5 + "px";
+
+      // Make this pair draggable
+      makeHeaderDraggable(header, dropzone);
+    }
+  });
+}
+
+// Update the CSS to add some styling
+function addFreeMovementStyles() {
+  const styleEl = document.createElement("style");
+
+  styleEl.innerHTML = `
+    .category-header { cursor: move; user-select: none; transition: background-color 0.2s, box-shadow 0.2s; }
+    .category-header:hover { background-color: #e0e0e0; }
+    .category-header:active { background-color: #d0d0d0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+    .dropzone { transition: background-color 0.2s; height:auto; }
+  `;
+
+  document.head.appendChild(styleEl);
+}
+
+// Initialize everything when edit mode is enabled
+function initializeFreeMovement() {
+  updateLayoutForFreeMovement();
+  addFreeMovementStyles();
+
+  // Add double-click to edit feature for category headers
+  document.querySelectorAll(".category-header").forEach((header) => {
+    header.addEventListener("dblclick", function () {
+      if (!isEditing.value) return;
+
+      const currentName = this.innerText;
+      const newName = prompt("Edit category name:", currentName);
+
+      if (newName && newName !== currentName) {
+        // Update the category name in the map
+        const oldId = this.id.replace("th-", "");
+
+        delete categoryMap[oldId];
+        categoryMap[newName] = categoryMap[oldId];
+
+        // Update the DOM
+        this.innerText = newName;
+        this.id = `th-${newName}`;
+
+        // Update the corresponding dropzone id
+        const dropzone = document.getElementById(oldId);
+        if (dropzone) dropzone.id = newName;
+
+        // Signal unsaved changes
+        if (areChangesSaved.value) {
+          areChangesSaved.value = false;
+          toggleSaveChangesBtn();
+        }
+      }
+    });
+  });
+}
 
 // ---------------- //
 //  ITEMS ADDITION  //
 // ---------------- //
-// const handleAddItems = async (existingImg, imgScale) => {
-//   await addItemOnScreen({ items, itemDivs, isAddingItems, itemsAdditionScreen, type: "item", addableImg: existingImg ? existingImg : addableImg, resizeBoxes, allowItemMove, allowItemResize, lastScales, isInitializing: existingImg ? true : false });
+window.addWordToPool = function (wordText, id) {
+  const wordDiv = document.createElement("div");
+  wordDiv.id = `divItem${id}`;
+  wordDiv.style.cssText = `position: relative; display: inline-block; margin: 5px; background-color: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 10px;`;
 
-//   // Add all event listeners now
-//   let x = itemDivs.length - 1;
+  const span = document.createElement("span");
+  span.className = "word";
+  span.id = `item${id}`;
+  span.draggable = true;
+  span.innerText = wordText;
 
-//   // Update the remaining items count
-//   if (!existingImg) {
-//     remainingItems += 1;
-//     itemsLeftNumber.innerHTML = remainingItems;
-//   }
+  span.addEventListener("dragstart", (e) => e.dataTransfer.setData("text/plain", span.id));
+  wordDiv.appendChild(span);
 
-//   // Update the scale of the image
-//   else if (imgScale) {
-//     lastScales[x] = imgScale;
-//     itemDivs[x].style.transformOrigin = "0 0";
-//     itemDivs[x].style.transform = `scale(${lastScales[x]})`;
-//   }
+  // Add Resize Handle Divs (Top-Left, Top-Right, Bottom-Left, Bottom-Right)
+  ["TL", "TR", "BL", "BR"].forEach((dir) => {
+    const resizeBox = document.createElement("div");
+    resizeBox.id = `resizeBox${id}${dir}`;
+    resizeBox.style.cssText = `position: absolute; ${dir.includes("T") ? "top: -6px;" : "bottom: -6px;"} ${dir.includes("L") ? "left: -6px;" : "right: -6px;"} width: 14px; height: 14px; cursor: ${dir === "TL" || dir === "BR" ? "nwse-resize" : "nesw-resize"}; border-radius: 100%; visibility: hidden; background-color: white; border: 1px solid red; z-index: 4001;`;
+    wordDiv.appendChild(resizeBox);
 
-//   isItemCollected.push(false);
-
-//   itemDivs[x].addEventListener("mousedown", (e) => {
-//     if (isTooltipOpen.value || !isEditing.value) return;
-//     handleDragStart(e, { i: x, targetDiv: itemDivs[x], isDragging, isResizing, gameWon, savedX, savedY, allowItemMove, teleporationFix, deltaX, deltaY, isEditing, type: "item", placeBack: true, btnLastX, btnLastY });
-//   });
-
-//   itemDivs[x].addEventListener("mouseup", (e) => {
-//     if (isTooltipOpen.value || !isEditing.value) return;
-//     handleDragEnd(e, { i: x, targetDiv: itemDivs[x], isDragging, isResizing, gameWon, savedX, savedY, allowItemMove, teleporationFix, deltaX, deltaY, isEditing, type: "item", placeBack: true, btnLastX, btnLastY });
-//   });
-
-//   itemDivs[x].addEventListener("click", () => handleElementClick({ currSelectedElement, element: itemDivs[x], isEditing, isTooltipOpen }));
-
-//   items[x].addEventListener("click", () => {
-//     if (isEditing.value) return;
-//     handleItemClick(items[x]);
-//   });
-
-//   resizeBoxes[x * 4].addEventListener("mousedown", (e) => handleResizeStart(e, { i: x, direction: "TL", isResizing, lastScales, allowItemResize, resizeLastX, item: items[x], itemDiv: itemDivs[x], lastDirection, resizeScale }));
-//   resizeBoxes[x * 4 + 1].addEventListener("mousedown", (e) => handleResizeStart(e, { i: x, direction: "TR", isResizing, lastScales, allowItemResize, resizeLastX, item: items[x], itemDiv: itemDivs[x], lastDirection, resizeScale }));
-//   resizeBoxes[x * 4 + 2].addEventListener("mousedown", (e) => handleResizeStart(e, { i: x, direction: "BL", isResizing, lastScales, allowItemResize, resizeLastX, item: items[x], itemDiv: itemDivs[x], lastDirection, resizeScale }));
-//   resizeBoxes[x * 4 + 3].addEventListener("mousedown", (e) => handleResizeStart(e, { i: x, direction: "BR", isResizing, lastScales, allowItemResize, resizeLastX, item: items[x], itemDiv: itemDivs[x], lastDirection, resizeScale }));
-// };
-
-function addItemsDynamically() {
-  const container = document.getElementById("gameContainer"); // The parent container for your items
-
-  Data.forEach((item, index) => {
-    // Adding index to identify each item
-    const divItem = document.createElement("div");
-    divItem.style.position = "absolute";
-    divItem.style.left = "-400px";
-    divItem.style.width = "50px";
-    divItem.style.height = "auto";
-    divItem.style.top = "0px";
-    divItem.style.display = "inline-block";
-    divItem.style.position = "relative";
-    divItem.style.justifyContent = "space-between";
-
-    // Create the delete button
-    const deleteButton = document.createElement("div");
-    deleteButton.style.position = "absolute";
-    deleteButton.style.right = "-840px";
-    deleteButton.style.top = "7px";
-    deleteButton.style.width = "20px";
-    deleteButton.style.height = "5px";
-    deleteButton.style.backgroundColor = "red";
-    deleteButton.style.cursor = "pointer";
-    deleteButton.innerText = ""; // Adding text to make the button more visible
-    divItem.appendChild(deleteButton);
-
-    // Add event listener to the delete button
-    deleteButton.addEventListener("click", () => {
-      // Remove the item from the Data array
-      Data.splice(index, 1);
-
-      // Remove the divItem from the DOM
-      divItem.remove();
-    });
-
-    // Create the item content container
-    const item1 = document.createElement("div");
-    item1.style.display = "flex";
-    item1.style.flexDirection = "row";
-    item1.style.gap = "30px";
-    item1.style.width = "900px";
-    item1.style.height = "auto";
-    item1.style.border = "2px solid #ccc";
-    item1.style.padding = "20px";
-    item1.style.boxSizing = "border-box";
-    item1.style.alignItems = "center";
-    item1.style.justifyContent = "space-between";
-
-    // Picture cell
-    const pictureCell = document.createElement("div");
-    pictureCell.style.flexShrink = "0";
-
-    const img = document.createElement("img");
-
-    img.src = item.image instanceof File ? URL.createObjectURL(item.image) : item.image;
-    img.alt = item.answer;
-    img.style.width = "100px";
-    img.style.height = "100px";
-    img.style.borderRadius = "8px";
-    img.style.transition = "transform 0.2s"; // Smooth scale animation
-
-    if (item.audio) {
-      const audio = new Audio(item.audio instanceof File ? URL.createObjectURL(item.audio) : item.audio);
-      audio.preload = "auto";
-
-      img.addEventListener("mouseenter", () => {
-        // Play audio and scale image
-        audio.currentTime = 0;
-        audio.play().catch((e) => console.log("Audio play failed:", e));
-        img.style.transform = "scale(1.05)";
-      });
-
-      img.addEventListener("mouseleave", () => {
-        // Stop audio and reset image size
-        audio.pause();
-        audio.currentTime = 0;
-        img.style.transform = "scale(1)";
-      });
-    }
-
-    pictureCell.appendChild(img);
-
-    item1.appendChild(pictureCell);
-
-    // Content cell (letters and colors display)
-    const contentCell = document.createElement("div");
-    contentCell.style.display = "flex";
-    contentCell.style.gap = "8px";
-    contentCell.style.flexWrap = "wrap";
-    contentCell.style.alignItems = "center";
-    contentCell.style.justifyContent = "center";
-    contentCell.style.flexGrow = "1";
-    contentCell.className = "letter-container"; // Add a class for easy selection
-
-    item.letters.forEach((letter, letterIndex) => {
-      const letterBlock = document.createElement("span");
-      letterBlock.innerText = letter;
-      letterBlock.style.width = "40px";
-      letterBlock.style.height = "40px";
-      letterBlock.style.backgroundColor = item.letterColors[letterIndex];
-      letterBlock.style.display = "inline-block";
-      letterBlock.style.textAlign = "center";
-      letterBlock.style.lineHeight = "40px";
-      letterBlock.style.color = "white";
-      letterBlock.style.fontWeight = "bold";
-      letterBlock.style.cursor = "pointer";
-      letterBlock.style.borderRadius = "25px";
-      letterBlock.setAttribute("draggable", "true");
-
-      // 👇 Hover effect
-      letterBlock.addEventListener("mouseover", () => {
-        letterBlock.style.boxShadow = "0 0 8px rgba(0, 0, 0, 0.5)";
-        letterBlock.style.transform = "scale(1.1)";
-        letterBlock.style.transition = "all 0.2s";
-      });
-
-      letterBlock.addEventListener("mouseout", () => {
-        letterBlock.style.boxShadow = "none";
-        letterBlock.style.transform = "scale(1)";
-      });
-
-      // 👇 CLICK EVENT TO INSERT INTO NEXT EMPTY INPUT AND LOCK BLOCK
-      letterBlock.addEventListener("click", () => {
-        const inputs = inputContainer.querySelectorAll("input");
-
-        for (let input of inputs) {
-          if (!input.value) {
-            input.value = letter.toUpperCase(); // Add the letter to first empty input
-            letterBlock.style.opacity = "0.5"; // Dim the block to show it's used
-            letterBlock.style.pointerEvents = "none"; // Disable future clicks
-            break;
-          }
-        }
-      });
-
-      contentCell.appendChild(letterBlock);
-    });
-
-    item1.appendChild(contentCell);
-
-    // Input boxes
-    const inputContainer = document.createElement("div");
-    inputContainer.style.display = "flex";
-    inputContainer.style.gap = "8px";
-    inputContainer.style.flexWrap = "wrap";
-    inputContainer.style.alignItems = "end";
-    inputContainer.style.marginTop = "16px";
-
-    // Create input fields for each letter
-    for (let i = 0; i < item.answer.length; i++) {
-      const input = document.createElement("input");
-      input.type = "text";
-      input.maxLength = "1";
-      input.style.width = "40px";
-      input.style.height = "40px";
-      input.style.textAlign = "center";
-      input.style.fontWeight = "bold";
-      inputContainer.appendChild(input);
-    }
-
-    item1.appendChild(inputContainer);
-    divItem.appendChild(item1);
-
-    // Append the item to the container
-    container.appendChild(divItem);
+    // Add the resize box to the global resizeBoxes array
+    resizeBoxes.push(resizeBox);
   });
 
-  // Enable drag and drop for letter blocks after they've been created
-  enableDragAndDrop();
-}
+  const wordPool = document.getElementById("wordPool");
+  if (wordPool) {
+    wordPool.appendChild(wordDiv);
+    totalWords++;
+  } else console.error("Word pool container not found.");
+};
 
-// -------------- //
-//  Letter Drag   //
-// -------------- //
-function enableDragAndDrop() {
-  document.querySelectorAll(".letter-container").forEach((container) => {
-    let draggedItem = null;
-
-    // Add drag events to each letter block within the container
-    container.querySelectorAll('span[draggable="true"]').forEach((letterBlock) => {
-      // When drag starts
-      letterBlock.addEventListener("dragstart", (e) => {
-        draggedItem = letterBlock;
-        // Add some visual feedback
-        setTimeout(() => {
-          letterBlock.style.opacity = "0.4";
-        }, 0);
-      });
-
-      // When drag ends
-      letterBlock.addEventListener("dragend", () => {
-        draggedItem.style.opacity = "1";
-        draggedItem = null;
-      });
-
-      // When dragging over another letter
-      letterBlock.addEventListener("dragover", (e) => {
-        e.preventDefault(); // Necessary to allow dropping
-      });
-
-      // When entering another letter's area
-      letterBlock.addEventListener("dragenter", (e) => {
-        e.preventDefault();
-        // Visual feedback
-        if (draggedItem !== letterBlock) {
-          letterBlock.style.transform = "scale(1.05)";
-        }
-      });
-
-      // When leaving another letter's area
-      letterBlock.addEventListener("dragleave", () => {
-        letterBlock.style.transform = "scale(1)";
-      });
-
-      // When dropping
-      letterBlock.addEventListener("drop", (e) => {
-        e.preventDefault();
-        letterBlock.style.transform = "scale(1)";
-
-        if (draggedItem && draggedItem !== letterBlock) {
-          // Replace the text/content of the letterBlock with the dragged item's content
-          const draggedText = draggedItem.innerText; // Get the text/content of the dragged item
-          draggedItem.innerText = letterBlock.innerText; // Replace dragged item's content with the letterBlock's content
-          letterBlock.innerText = draggedText; // Replace letterBlock's content with the dragged item's content
-        }
-      });
-
-      //Function to edit Block
-      letterBlock.addEventListener("contextmenu", (e) => {
-        e.preventDefault(); // Prevent the default right-click menu
-
-        const input = document.createElement("input");
-        input.type = "text";
-        input.value = letterBlock.innerText;
-        input.maxLength = 1; // Limit to one character
-        input.style.width = "40px";
-        input.style.height = "40px";
-        input.style.textAlign = "center";
-        input.style.fontWeight = "bold";
-        input.style.fontSize = "18px";
-
-        // Replace content with input field
-        letterBlock.innerHTML = "";
-        letterBlock.appendChild(input);
-
-        input.focus();
-
-        input.addEventListener("blur", () => {
-          letterBlock.innerText = input.value.toUpperCase();
-        });
-
-        input.addEventListener("keydown", (e) => {
-          if (e.key === "Enter") {
-            letterBlock.innerText = input.value.toUpperCase();
-          }
-        });
-      });
-    });
+function initializeCategoryDrag() {
+  // Optional: Remove reordering logic if free movement is the only requirement - if reordering is still needed, ensure it doesn't interfere with free dragging
+  document.querySelectorAll("#categoryTableHead > div").forEach((header) => {
+    // Remove existing drag listeners to avoid conflicts
+    header.removeEventListener("dragstart", handleDragStart);
+    header.removeEventListener("dragend", handleDragEnd);
+    header.removeEventListener("dragover", handleDragOver);
+    header.removeEventListener("dragleave", handleDragLeave);
+    header.removeEventListener("drop", handleDrop);
   });
 }
 
-addItemsDynamically();
 // ---------------- //
-//  ITEMS DELETION  //
+//  ITEMS MOVEMENT  //
 // ---------------- //
 
-const deleteItem = (index) => {
-  delItemCount++;
-  delItems.push(itemDivs[index]);
+// Populate the category dropdown with available categoryMap
+function populateCategoryDropdown() {
+  const categoryDropdown = document.getElementById("categoryDropdown");
+  categoryDropdown.innerHTML = "";
 
-  itemDivs[index].style.display = "none";
+  Object.keys(categoryMap).forEach((categoryId) => {
+    const option = document.createElement("option");
+    option.value = categoryId;
+    option.textContent = categoryId.replace(/-/g, " ");
+    categoryDropdown.appendChild(option);
+  });
+}
 
-  for (let i = 0; i < 4; i++) {
-    resizeBoxes[index * 4 + i].style.display = "none";
+// Event listener for the "Add Category" button
+document.getElementById("addCategoryBtn").addEventListener("click", () => {
+  const categoryName = document.getElementById("newCategoryName").value.trim();
+
+  if (!categoryName) {
+    alert("Please enter a category name.");
+    return;
   }
-};
 
-const getDraggedItemIndex = () => {
-  // Get the item being dragged
-  for (let i = 0; i < allowItemMove.length; i++) {
-    if (allowItemMove[i]) {
-      allowItemMove[i] = false;
-      isDragging.value = false;
+  window.addCategoryColumn(categoryName, []);
+  itemsAdditionScreen.style.display = "none";
 
-      return i;
-    }
+  document.getElementById("newCategoryName").value = "";
+  populateCategoryDropdown();
+});
+
+// Add event listener for the "Add Word" button
+document.getElementById("addWordBtn").addEventListener("click", () => {
+  const wordText = document.getElementById("newWordText").value.trim();
+  const selectedCategory = document.getElementById("categoryDropdown").value;
+
+  if (!wordText) {
+    alert("Please enter a word.");
+    return;
   }
 
-  return null;
-};
+  if (!selectedCategory) {
+    alert("Please select a category.");
+    return;
+  }
 
+  if (categoryMap[selectedCategory]) {
+    categoryMap[selectedCategory].push(wordText);
+    window.addWordToPool(wordText, Date.now()); // Use a unique ID for the word
+
+    // Close the items addition screen
+    const itemsAdditionScreen = document.getElementById("itemsAddition");
+    itemsAdditionScreen.style.display = "none";
+
+    // Clear the input field
+    document.getElementById("newWordText").value = "";
+  }
+
+  // Remove this alert, add some other visual indication inside the game
+  else alert("Selected category does not exist.");
+});
+
+// Toggle between category and word input sections
+document.querySelectorAll('input[name="itemType"]').forEach((radio) => {
+  const inputSectionChange = (a, b) => {
+    document.getElementById("categoryInputSection").style.display = a;
+    document.getElementById("wordInputSection").style.display = b;
+  };
+
+  radio.addEventListener("change", (e) => {
+    if (e.target.value === "category") inputSectionChange("block", "none");
+    else if (e.target.value === "word") inputSectionChange("none", "block");
+  });
+});
+
+// ----------- //
+// Delete Item //
+// ----------- //
 const handleDeleteBtnMouseUp = () => {
-  // Nothing is being dragged || Something is being resized || The tooltip button is being moved || Only one item is left
   if (!isDragging.value || isResizing.value || allowItemMove[0] || remainingItems === 1) {
     playSound(wrongSound);
 
-    // The bin was just simply clicked
+    // Not dragging
     if (!isDragging.value) {
       binTooltip.style.display = binTooltipRectangle.style.display = "block";
-
-      setTimeout(() => {
-        binTooltip.style.display = binTooltipRectangle.style.display = "none";
-      }, 5000);
+      setTimeout(() => (binTooltip.style.display = binTooltipRectangle.style.display = "none"), 5000);
     }
 
-    // The game tooltip btn was being moved
-    else if (allowItemMove[0]) {
-      disallowDelete({ targetDiv: btnDiv, lastX: btnLastX, lastY: btnLastY, i: 0, type: "button", isDragging, savedX, savedY, allowItemMove });
-    }
-
-    // Only one item is left
+    // Tooltip is being moved
+    else if (allowItemMove[0]) disallowDelete({ targetDiv: btnDiv, lastX: btnLastX, lastY: btnLastY, i: 0, type: "button", isDragging, savedX, savedY, allowItemMove });
+    // Only one word is left
     else if (remainingItems === 1) {
       let itemIndex = getDraggedItemIndex();
       disallowDelete({ targetDiv: itemDivs[itemIndex], lastX: savedX, lastY: savedY, i: itemIndex, type: "item", isDragging, savedX, savedY, allowItemMove });
@@ -419,171 +504,72 @@ const handleDeleteBtnMouseUp = () => {
     return;
   }
 
-  // Get the item being dragged
-  let targetIndex = getDraggedItemIndex();
-
-  // Delete it now
   playSound(deleteSound);
-  deleteItem(targetIndex);
-
-  remainingItems -= 1;
-  itemsLeftNumber.innerHTML = remainingItems;
 };
 
-// ----------- //
-//  SAVE GAME  //
-// ----------- //
-const toggleSaveChangesBtn = (isDisabled = false, cursorType = "pointer", opacity = 1) => {
-  saveChangesBtn.disabled = isDisabled;
-  saveChangesBtn.style.cursor = cursorType;
-  saveChangesBtn.style.opacity = opacity;
-};
-
-const saveGame = (e, type) => {
-  if (e) e.preventDefault();
-
-  // Disable the save changes button
-  if (type === "game data") toggleSaveChangesBtn(true, "not-allowed", 0.7);
-
-  // Generic Elements
-  gameData = {
-    tooltip: {
-      title: title.innerText,
-      description: description.innerText,
-      btnX: btnLastX.value,
-      btnY: btnLastY.value,
-      showTooltip: showTooltip.value,
-      btnScale: lastScales[0],
-    },
-
-    elements: [],
-
-    // Unique Elements
-    uncommon: {
-      remainingItems,
-      delItemCount,
-    },
-
-    base64Strings: [bgImg.src, btn.src, collectSound.src, winSound.src, wrongSound.src, clickSound.src, deleteSound.src],
-  };
-
-  // Item Divs
-  for (let i = 1; i < items.length; i++) {
-    gameData.elements.push({
-      x: itemDivs[i].style.left,
-      y: itemDivs[i].style.top,
-      scale: lastScales[i],
-      width: items[i].offsetWidth,
-      height: items[i].offsetHeight,
-    });
-
-    gameData.base64Strings.push(items[i].src);
+function handleDeleteWord(draggedElement) {
+  if (!draggedElement) {
+    console.error("No element to delete.");
+    return;
   }
 
-  window.parent.postMessage({ type, gameData, gameId: urlParams.get("gameid"), url: window.location.origin }, parentUrl);
-  if (type === "game data") areChangesSaved.value = true;
-};
+  let wordElement = null;
+  let wordText = "";
 
-const initializeGame = (recievedData) => {
-  // Check if the game has been saved before
-  if (!recievedData) return;
+  // Check if it's a divItem containing a word inside
+  if (draggedElement.id.startsWith("divItem")) {
+    wordElement = draggedElement.querySelector(".word"); // find the <span> inside the div
 
-  // Background
-  if (recievedData.assetUrls && recievedData.assetUrls.length > 0) {
-    background.src = bgImg.src = recievedData.assetUrls[0];
-    btn.src = btnSrc.value = recievedData.assetUrls[1];
-
-    collectSound.src = recievedData.assetUrls[2];
-    winSound.src = recievedData.assetUrls[3];
-    wrongSound.src = recievedData.assetUrls[4];
-    clickSound.src = recievedData.assetUrls[5];
-    deleteSound.src = recievedData.assetUrls[6];
-  }
-
-  // Game Tooltip
-  if (recievedData.tootlip) {
-    title.innerText = recievedData.tooltip.title;
-    description.innerText = recievedData.tooltip.description;
-
-    btnLastX.value = recievedData.tooltip.btnX;
-    btnLastY.value = recievedData.tooltip.btnY;
-
-    btnDiv.style.left = `${btnLastX.value}px`;
-    btnDiv.style.top = `${btnLastY.value}px`;
-
-    lastScales[0] = recievedData.tooltip.btnScale;
-    btnDiv.style.transform = `scale(${lastScales[0]})`;
-
-    showTooltip.value = recievedData.tooltip.showTooltip;
-    if (!showTooltip.value) btnOffHandler({ showTooltip, btnOff, btnOn, btnDiv, resizeBoxes });
-  }
-
-  // Elements
-  if (recievedData.elements.length > 0) {
-    for (let i = 1; i < items.length; i++) {
-      // URL
-      items[i].src = recievedData.assetUrls[i + 6];
-
-      // Position
-      itemDivs[i].style.left = recievedData.elements[i - 1].x;
-      itemDivs[i].style.top = recievedData.elements[i - 1].y;
-
-      // Dimensions
-      items[i].width = recievedData.elements[i - 1].width;
-      items[i].height = recievedData.elements[i - 1].height;
-
-      // Scale
-      lastScales[i] = recievedData.elements[i - 1].scale;
-      itemDivs[i].style.transform = `scale(${lastScales[i]})`;
+    if (!wordElement) {
+      console.error("No word element found inside divItem.");
+      return;
     }
 
-    // Now, we have to create all the elements that were added to the game through game UI
-    for (let i = items.length; i <= recievedData.elements.length; i++) {
-      const theImg = new Image();
+    wordText = wordElement.textContent.trim();
+  }
 
-      // Give the image an src, width & height when it is loaded
-      theImg.onload = () => {
-        theImg.style.width = recievedData.elements[i - 1].width;
-        theImg.style.height = recievedData.elements[i - 1].height;
+  // It's a direct word
+  else if (draggedElement.classList.contains("word")) {
+    wordElement = draggedElement;
+    wordText = draggedElement.textContent.trim();
+  }
 
-        theImg.style.left = recievedData.elements[i - 1].x;
-        theImg.style.top = recievedData.elements[i - 1].y;
+  // Error
+  else {
+    console.error("Unknown dragged element type.");
+    return;
+  }
 
-        handleAddItems(theImg, recievedData.elements[i - 1].scale);
+  console.log(`Deleting word: "${wordText}"`);
 
-        // Hide the new resize boxes
-        for (let j = resizeBoxes.length - 4; j < resizeBoxes.length; j++) {
-          resizeBoxes[j].style.visibility = "hidden";
-          resizeBoxes[j].style.visibility = "hidden";
-          resizeBoxes[j].style.visibility = "hidden";
-          resizeBoxes[j].style.visibility = "hidden";
-        }
+  // Remove word from categoryMap
+  Object.keys(categoryMap).forEach((categoryId) => {
+    const words = categoryMap[categoryId];
+    const wordIndex = words.indexOf(wordText);
 
-        // Hide the new border
-        items[items.length - 1].style.border = "1px solid transparent";
-        items[items.length - 1].style.cursor = "default";
-      };
-
-      theImg.src = recievedData.assetUrls[i + 6];
+    if (wordIndex !== -1) {
+      words.splice(wordIndex, 1);
+      console.log(`Word "${wordText}" removed from category "${categoryId}".`);
     }
-  }
+  });
 
-  // Set the unique elements
-  if (recievedData.uncommon) {
-    remainingItems = recievedData.uncommon.remainingItems;
-    delItemCount = recievedData.uncommon.delItemCount;
-  }
-
-  itemsLeftNumber.innerHTML = remainingItems;
-};
+  // Remove the full div
+  if (draggedElement.id.startsWith("divItem")) draggedElement.remove();
+  // Remove just the span.word
+  else wordElement.remove();
+}
 
 // --------- //
 //  GENERAL  //
 // --------- //
 
+// Populate the dropdown when the items addition screen is shown
+populateCategoryDropdown();
+
 let currSelectedElement = { value: null };
 let gameWon = false;
-
+let totalWords = 0;
+let droppedWords = 0;
 // Elements
 let items = [document.getElementById("btn")];
 let itemDivs = [document.getElementById("btnDiv")];
@@ -591,7 +577,7 @@ let resizeBoxes = [];
 let isItemCollected = [];
 
 let delItems = [];
-let remainingItems = 4;
+let remainingItems = 12;
 let delItemCount = 0;
 
 // ------ //
@@ -650,6 +636,124 @@ const deleteBtn = document.getElementById("deleteBtn");
 const binTooltip = document.getElementById("binTooltip");
 const binTooltipRectangle = document.getElementById("binTooltipRectangle");
 
+deleteBtn.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  deleteBtn.style.backgroundColor = "#ffcccc";
+});
+
+deleteBtn.addEventListener("dragleave", () => (deleteBtn.style.backgroundColor = ""));
+
+deleteBtn.addEventListener("drop", (e) => {
+  e.preventDefault();
+  deleteBtn.style.backgroundColor = "";
+
+  const draggedId = e.dataTransfer.getData("text/plain");
+  let draggedElement = document.getElementById(draggedId);
+
+  if (!draggedElement) {
+    console.error(`Dragged element with ID "${draggedId}" not found.`);
+    return;
+  }
+
+  handleDeleteWord(draggedElement);
+  playSound(deleteSound);
+});
+
+// Event listener to show the delete panel when deleteBtn is clicked - function to populate the dropdown with categories
+const deletePanel = document.getElementById("deletePanel");
+const deleteCategoryDropdown = document.getElementById("deleteCategoryDropdown");
+const confirmDeleteCategoryBtn = document.getElementById("confirmDeleteCategoryBtn");
+
+function populateDeleteCategoryDropdown() {
+  const categoryDropdown = document.getElementById("deleteCategoryDropdown");
+  categoryDropdown.innerHTML = ""; // Clear existing options
+
+  const categories = Object.keys(categoryMap);
+
+  if (categories.length === 0) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "No categories available";
+
+    categoryDropdown.appendChild(option);
+    return;
+  }
+
+  categories.forEach((categoryId) => {
+    const option = document.createElement("option");
+    option.value = categoryId;
+    option.textContent = categoryId.replace(/-/g, " ");
+    categoryDropdown.appendChild(option);
+  });
+
+  categoryDropdown.style.display = "block"; // Show the dropdown
+}
+
+// Populate the dropdown on page load
+document.addEventListener("DOMContentLoaded", () => populateDeleteCategoryDropdown());
+
+// Event listener to show the delete panel when deleteBtn is clicked
+deleteBtn.addEventListener("click", () => {
+  // Ensure the dropdown is up-to-date
+  populateDeleteCategoryDropdown();
+
+  // Show the dropdown
+  deletePanel.style.display = deleteCategoryDropdown.style.display = "block";
+  document.getElementById("deleteCategoryHeading").Heading.style.display = deleteCategoryDropdown.style.color = "black";
+  deleteCategoryDropdown.style.backgroundColor = "white";
+});
+
+// Event listener to delete the selected category
+confirmDeleteCategoryBtn.addEventListener("click", () => {
+  const selectedCategory = document.getElementById("deleteCategoryDropdown").value;
+
+  if (!selectedCategory) {
+    alert("Please select a category to delete.");
+    return;
+  }
+
+  // Call the existing handleDeleteCategory function
+  handleDeleteCategory(selectedCategory);
+
+  // Update the dropdown after deletion
+  populateDeleteCategoryDropdown();
+
+  // Hide the delete panel after deletion
+  deletePanel.style.display = "none";
+});
+
+// Event listener to cancel and hide the delete panel - hide the delete panel
+cancelDeleteBtn.addEventListener("click", () => (deletePanel.style.display = "none"));
+
+function handleDeleteCategory(categoryName) {
+  // Use the same name for consistency
+  const categoryId = categoryName;
+  const categoryIdWithMap = categoryMap[categoryId];
+  console.log(categoryMap);
+  if (categoryIdWithMap) {
+    console.error(`Category "${categoryName}" not found in categoryMap.`);
+    return;
+  }
+
+  // Remove the category from the categoryMap
+  delete categoryMap[categoryId];
+
+  // Remove the category column and dropzone from the DOM
+  const headerDiv = document.querySelector(`#categoryTableHead > div[id="th-${categoryId}"]`);
+  const dropzoneDiv = document.querySelector(`#categoryTableBody > div[id="${categoryId}"]`);
+
+  if (headerDiv) headerDiv.remove();
+  if (dropzoneDiv) dropzoneDiv.remove();
+
+  // Remove the words from the word pool
+  categoryIdWithMap.forEach((word) => {
+    const wordElement = Array.from(document.querySelectorAll(".word")).find((el) => el.innerText.trim() === word);
+
+    // Remove the word's parent div
+    if (wordElement) wordElement.parentElement.remove();
+  });
+}
+
 // --------------- //
 //  GAME SETTINGS  //
 // --------------- //
@@ -664,19 +768,15 @@ const bgImgInput = document.getElementById("bgImgInput");
 //  ITEMS ADDITION  //
 // ---------------- //
 let isAddingItems = { value: false };
-const addItemBtn = document.getElementById("addItemBtn");
 
 const itemsAdditionCloseBtn = document.getElementById("itemsAdditionCloseBtn");
 const itemsAdditionScreen = document.getElementById("itemsAddition");
-
-const addableImg = document.getElementById("addableImg");
-const addableImgInput = document.getElementById("addableImgInput");
 
 // -------------- //
 //  CONTEXT MENU  //
 // -------------- //
 let currentItemCM = null;
-
+let score = 0;
 const contextMenu = document.getElementById("contextMenu");
 const changeImageBtn = document.getElementById("changeImage");
 const changeImageInput = document.getElementById("changeImageInput");
@@ -698,8 +798,6 @@ const deleteSound = document.getElementById("deleteSound");
 //  SAVE GAME  //
 // ----------- //
 let areChangesSaved = { value: true };
-
-let gameData = {};
 
 let tags = [];
 let configurableSettings = [];
@@ -723,40 +821,68 @@ if (snapshot !== "true" && snapshot !== true) {
   //  DOCUMENT ELEMENTS  //
   // ------------------- //
 
-  // Items
-  for (let i = 1; i <= 1; i++) {
-    items.push(document.getElementById(`item${i}`));
-    itemDivs.push(document.getElementById(`divItem${i}`));
-    isItemCollected.push(false);
-  }
+  // Dynamically add categoryMap to the table
+  Object.keys(categoryMap).forEach((categoryName) => {
+    const words = categoryMap[categoryName]; // Get the words for the category
+    window.addCategoryColumn(categoryName, words);
+  });
+
+  // Add words to the word pool
+  let wordId = 1; // Unique ID for each word
+  Object.keys(categoryMap).forEach((category) => {
+    const words = categoryMap[category]; // Get the array of words for the category
+    words.forEach((word) => {
+      window.addWordToPool(word, wordId++);
+
+      // Push the word element into items, itemDivs, and isItemCollected
+      const wordElement = document.getElementById(`item${wordId - 1}`);
+      const wordDivElement = document.getElementById(`divItem${wordId - 1}`);
+
+      if (wordElement && wordDivElement) {
+        items.push(wordElement);
+        itemDivs.push(wordDivElement);
+        isItemCollected.push(false);
+      } else console.warn(`Word element or div not found for word ID: ${wordId - 1}`);
+    });
+  });
 
   // Resize Boxes
-  // for (let i = 0; i < items.length; i++) {
-  //   resizeBoxes.push(document.getElementById(`resizeBox${i}TL`));
-  //   resizeBoxes.push(document.getElementById(`resizeBox${i}TR`));
-  //   resizeBoxes.push(document.getElementById(`resizeBox${i}BL`));
-  //   resizeBoxes.push(document.getElementById(`resizeBox${i}BR`));
-  // }
+  for (let i = 0; i < items.length; i++) {
+    ["TL", "TR", "BL", "BR"].forEach((dir) => resizeBoxes.push(document.getElementById(`resizeBox${i}${dir}`)));
+  }
 
-  // // Add event listeners to all items
-  // for (let i = 1; i < items.length; i++) {
-  //   items[i].addEventListener("click", () => {
-  //     if (isEditing.value) return;
-  //     handleItemClick(items[i]);
-  //   });
-  // }
+  // Initialize dropzones for drag-and-drop functionality
+  initializeDropzones();
 
-  // Items Addition
-  addableImgInput.addEventListener("change", (e) => handleImageUpload(e, { targetImg: addableImg }));
+  // Add event listeners for dynamically added words
+  document.querySelectorAll(".word").forEach((word) => {
+    word.addEventListener("dragstart", (e) => e.dataTransfer.setData("text/plain", e.target.id));
+  });
 
-  addItemBtn.addEventListener("click", () => {
-    if (areChangesSaved.value) {
-      window.parent.postMessage({ type: "unsaved changes", gameId: urlParams.get("gameid"), url: window.location.origin }, parentUrl);
-      areChangesSaved.value = false;
-      toggleSaveChangesBtn();
-    }
+  // Add event listeners for dynamically added dropzones
+  document.querySelectorAll(".dropzone").forEach((zone) => {
+    zone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      zone.style.backgroundColor = "#e0e0e0";
+    });
 
-    handleAddItems();
+    zone.addEventListener("dragleave", () => (zone.style.backgroundColor = ""));
+
+    zone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      zone.style.backgroundColor = "";
+
+      const wordEl = document.getElementById(e.dataTransfer.getData("text/plain"));
+
+      // Check if the word is correct for this category
+      if (categoryMap[zone.id]?.includes(wordEl.textContent.trim())) {
+        zone.appendChild(wordEl); // Move the word into the dropzone
+        wordEl.style.backgroundColor = "#c8f7c5"; // Light green for correct
+        wordEl.innerHTML = wordEl.innerHTML.substring(0, 4).concat(".."); // Truncate the word
+      } else {
+        wordEl.style.backgroundColor = "#f7c5c5"; // Light red for incorrect
+      }
+    });
   });
 
   // Audios
@@ -770,29 +896,31 @@ if (snapshot !== "true" && snapshot !== true) {
     audioElements.push(document.getElementById(`audioElement${i}`));
   }
 
-  window.onload = function () {
-    const itemDivs = document.querySelectorAll(".itemDivClass");
-    if (itemDivs.length > 0) {
-      for (let i = 0; i < itemDivs.length; i++) {
-        if (itemDivs[i]) {
-          itemDivs[i].addEventListener("mousedown", (e) => {
-            if (isTooltipOpen.value || !isEditing.value) return;
-            if (areChangesSaved.value) {
-              window.parent.postMessage({ type: "unsaved changes", gameId: urlParams.get("gameid"), url: window.location.origin }, parentUrl);
-              areChangesSaved.value = false;
-              toggleSaveChangesBtn();
-            }
-            handleDragStart(e, { i, targetDiv: itemDivs[i], isDragging, isResizing, gameWon, savedX, savedY, allowItemMove, teleporationFix, deltaX, deltaY, isEditing, type: i === 0 ? "button" : "item", placeBack: true, btnLastX, btnLastY });
-          });
-          itemDivs[i].addEventListener("mouseup", (e) => {
-            if (isTooltipOpen.value || !isEditing.value) return;
-            handleDragEnd(e, { i, targetDiv: itemDivs[i], isDragging, isResizing, gameWon, savedX, savedY, allowItemMove, teleporationFix, deltaX, deltaY, isEditing, type: i === 0 ? "button" : i === 1 ? "targetObject" : "item", placeBack: true, btnLastX, btnLastY });
-          });
-          itemDivs[i].addEventListener("click", () => handleElementClick({ currSelectedElement, element: itemDivs[i], isEditing, isTooltipOpen }));
+  for (let i = 0; i < itemDivs.length; i++) {
+    if (itemDivs[i]) {
+      // Ensure the element exists
+      itemDivs[i].addEventListener("mousedown", (e) => {
+        if (isTooltipOpen.value || !isEditing.value) return;
+
+        if (areChangesSaved.value) {
+          window.parent.postMessage({ type: "unsaved changes", gameId: urlParams.get("gameid"), url: window.location.origin }, parentUrl);
+          areChangesSaved.value = false;
         }
-      }
-    }
-  };
+
+        handleDragStart(e, { i, targetDiv: itemDivs[i], isDragging, isResizing, gameWon, savedX, savedY, allowItemMove, teleporationFix, deltaX, deltaY, isEditing, type: i === 0 ? "button" : "item", placeBack: true, btnLastX, btnLastY });
+      });
+    } else console.warn(`itemDivs[${i}] is null or undefined.`);
+
+    itemDivs[i].addEventListener("mouseup", (e) => {
+      if (isTooltipOpen.value || !isEditing.value) return;
+      handleDragEnd(e, { i, targetDiv: itemDivs[i], isDragging, isResizing, gameWon, savedX, savedY, allowItemMove, teleporationFix, deltaX, deltaY, isEditing, type: i === 0 ? "button" : i === 1 ? "targetObject" : "item", placeBack: true, btnLastX, btnLastY });
+    });
+
+    itemDivs[i].addEventListener("click", () => {
+      handleElementClick({ currSelectedElement, element: itemDivs[i], isEditing, isTooltipOpen });
+      makeItemsDraggable();
+    });
+  }
 
   // Edit Mode
   let cursorType = { value: "default" };
@@ -802,61 +930,84 @@ if (snapshot !== "true" && snapshot !== true) {
   editModeBtns.push(saveBtn);
   editModeBtns.push(deleteBtn);
 
-  // editModeBtn.addEventListener("click", () => handleEditModeButtonClick({ clickSound, isEditing, items, resizeBoxes, showTooltip, isTooltipOpen, btnDiv, editModeBtns, currSelectedElement, settingsScreen, btnClicks, binTooltip, binTooltipRectangle }));
-
   editModeBtn.addEventListener("click", () => {
     const itemsLeftNumber = document.getElementById("itemsLeftNumber");
+    initializeCategoryDrag();
 
     remainingItems = items.length - 1 - delItemCount;
     itemsLeftNumber.innerHTML = remainingItems;
-    console.log(items);
+
     // Make all items visible again
     for (let i = 1; i < items.length; i++) {
       items[i].style.opacity = 1;
       items[i].style.display = "block";
     }
 
-    if (isItemCollected) {
-      // Reset collection state of all items
+    // Reset collection state of all items
+    if (isItemCollected)
       for (let i = 1; i < items.length; i++) {
         isItemCollected[i] = false;
       }
-    }
+
+    btnDiv.style.display = btn.style.display = itemsLeft.style.display = itemsLeftNumber.style.display = "block";
 
     hideScreen(settingsScreen);
     hideScreen(itemsAdditionScreen);
-    handleEditModeButtonClick({ game: "wrh", cursorType, clickSound, isEditing, items, resizeBoxes, isItemCollected, remainingItems, showTooltip, isTooltipOpen, btnDiv, editModeBtns, currSelectedElement, settingsScreen, btnClicks, binTooltip, binTooltipRectangle, refreshBtn });
+
+    // Handle edit mode
+    handleEditModeButtonClick({ cursorType, clickSound, isEditing, items, resizeBoxes, isItemCollected, remainingItems, showTooltip, isTooltipOpen, btnDiv, editModeBtns, currSelectedElement, settingsScreen, btnClicks, binTooltip, binTooltipRectangle, refreshBtn });
+
+    // Make items draggable when in edit mode and their resize handles are visible
+    if (isEditing.value) {
+      makeItemsDraggable();
+      initializeFreeMovement();
+      toggleBouncing(true);
+
+      // Monitor for changes in resize handle visibility and update draggable state
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          // A resize handle's style has changed, check if we need to update draggable state
+          if (mutation.attributeName === "style" && mutation.target.id && mutation.target.id.startsWith("resizeBox")) {
+            const elementId = mutation.target.id.replace(/resizeBox(\d+)[A-Z]{2}/, "$1");
+            if (document.getElementById(`divItem${elementId}`)) makeItemsDraggable();
+          }
+        });
+      });
+
+      // Observe all resize handles
+      document.querySelectorAll('[id^="resizeBox"]').forEach((handle) => observer.observe(handle, { attributes: true }));
+    } else toggleBouncing(false);
   });
 
   refreshBtn.addEventListener("click", () => {
-    const itemsLeftNumber = document.getElementById("itemsLeftNumber");
-
     remainingItems = items.length - 1 - delItemCount;
-    itemsLeftNumber.innerHTML = remainingItems;
+    document.getElementById("itemsLeftNumber").innerHTML = remainingItems;
 
     // Make all items visible again
     for (let i = 1; i < items.length; i++) {
       items[i].style.opacity = 1;
       items[i].style.display = "block";
     }
-    if (isItemCollected) {
+
+    if (isItemCollected)
       // Reset collection state of all items
       for (let i = 1; i < items.length; i++) {
         isItemCollected[i] = false;
       }
-    }
   });
 
   // Add Items screen
-  addItemsBtn.addEventListener("click", () => handleAddItemsButtonClick({ isAddingItems, itemsAdditionScreen, cleanUp: false, clickSound, settingsScreen, saveScreen }));
-  itemsAdditionCloseBtn.addEventListener("click", () => handleAddItemsCloseButtonClick({ clickSound, isAddingItems, itemsAdditionScreen }));
+  if (addItemsBtn) addItemsBtn.addEventListener("click", () => handleAddItemsButtonClick({ isAddingItems, itemsAdditionScreen, cleanUp: false, clickSound, settingsScreen, saveScreen }));
+  else console.error("addItemsBtn element not found.");
+
+  if (itemsAdditionCloseBtn) itemsAdditionCloseBtn.addEventListener("click", () => handleAddItemsCloseButtonClick({ clickSound, isAddingItems, itemsAdditionScreen }));
+  else console.error("itemsAdditionCloseBtn element not found.");
 
   // Game Settings
   bgImgInput.addEventListener("change", (e) => {
     if (areChangesSaved.value) {
       window.parent.postMessage({ type: "unsaved changes", gameId: urlParams.get("gameid"), url: window.location.origin }, parentUrl);
       areChangesSaved.value = false;
-      toggleSaveChangesBtn();
     }
 
     handleSingleImageUpload(e, { targetImg: background, newImg: bgImg });
@@ -890,7 +1041,6 @@ if (snapshot !== "true" && snapshot !== true) {
     if (areChangesSaved.value) {
       window.parent.postMessage({ type: "unsaved changes", gameId: urlParams.get("gameid"), url: window.location.origin }, parentUrl);
       areChangesSaved.value = false;
-      toggleSaveChangesBtn();
     }
 
     btnOnHandler({ showTooltip, btnOn, btnOff, btnDiv, resizeBoxes });
@@ -900,7 +1050,6 @@ if (snapshot !== "true" && snapshot !== true) {
     if (areChangesSaved.value) {
       window.parent.postMessage({ type: "unsaved changes", gameId: urlParams.get("gameid"), url: window.location.origin }, parentUrl);
       areChangesSaved.value = false;
-      toggleSaveChangesBtn();
     }
 
     btnOffHandler({ showTooltip, btnOff, btnOn, btnDiv, resizeBoxes });
@@ -910,7 +1059,6 @@ if (snapshot !== "true" && snapshot !== true) {
     if (areChangesSaved.value) {
       window.parent.postMessage({ type: "unsaved changes", gameId: urlParams.get("gameid"), url: window.location.origin }, parentUrl);
       areChangesSaved.value = false;
-      toggleSaveChangesBtn();
     }
 
     btnBlackHandler({ btnWhite, btnBlack, btnSrc, btn });
@@ -920,7 +1068,6 @@ if (snapshot !== "true" && snapshot !== true) {
     if (areChangesSaved.value) {
       window.parent.postMessage({ type: "unsaved changes", gameId: urlParams.get("gameid"), url: window.location.origin }, parentUrl);
       areChangesSaved.value = false;
-      toggleSaveChangesBtn();
     }
 
     btnWhiteHandler({ btnWhite, btnBlack, btnSrc, btn });
@@ -932,7 +1079,6 @@ if (snapshot !== "true" && snapshot !== true) {
       if (areChangesSaved.value) {
         window.parent.postMessage({ type: "unsaved changes", gameId: urlParams.get("gameid"), url: window.location.origin }, parentUrl);
         areChangesSaved.value = false;
-        toggleSaveChangesBtn();
       }
 
       handleAudioUpload(e, { audioElement: audioElements[i], playableAudio: playableAudios[i] });
@@ -971,9 +1117,37 @@ if (snapshot !== "true" && snapshot !== true) {
   // Items Deletion
   deleteBtn.addEventListener("mouseup", handleDeleteBtnMouseUp);
 
-  // On Board Images Resizing
+  // First, let's make sure our arrays are properly initialized
+  const initializeArrays = () => {
+    // Make sure these arrays match the number of items
+    if (!lastScales || lastScales.length < items.length) lastScales = new Array(items.length).fill(1.0);
+    if (!allowItemResize || allowItemResize.length < items.length) allowItemResize = new Array(items.length).fill(false);
+  };
+
+  // Call this function to ensure our arrays are ready
+  initializeArrays();
+
+  // Now, let's fix the resize box event binding
   for (let i = 0; i < resizeBoxes.length; i++) {
-    resizeBoxes[i].addEventListener("mousedown", (e) => handleResizeStart(e, { i: parseInt(i / 4), direction: i % 4 === 0 ? "TL" : i % 4 === 1 ? "TR" : i % 4 === 2 ? "BL" : "BR", isResizing, lastScales, allowItemResize, resizeLastX, item: items[parseInt(i / 4)], itemDiv: itemDivs[parseInt(i / 4)], lastDirection, resizeScale }));
+    const itemIndex = Math.floor(i / 4);
+
+    // Skip if either the resize box doesn't exist or there's no corresponding item
+    if (!resizeBoxes[i] || !items[itemIndex] || !itemDivs[itemIndex]) continue;
+
+    // Store the item index directly in the DOM element for reliable reference
+    resizeBoxes[i].dataset.itemIndex = itemIndex;
+
+    // Add the event listener with a more reliable approach
+    resizeBoxes[i].addEventListener("mousedown", function (e) {
+      // Use the stored itemIndex from the dataset rather than recalculating
+      const actualItemIndex = parseInt(this.dataset.itemIndex) + 1;
+
+      // Calculate the corner position (TL, TR, BL, BR)
+      const cornerPosition = i % 4 === 0 ? "TL" : i % 4 === 1 ? "TR" : i % 4 === 2 ? "BL" : "BR";
+
+      // Call the resize handler with the correct parameters
+      handleResizeStart(e, { i: actualItemIndex, direction: cornerPosition, isResizing, lastScales, allowItemResize, resizeLastX, item: items[actualItemIndex], itemDiv: itemDivs[actualItemIndex], lastDirection, resizeScale });
+    });
   }
 
   // Context Menu
@@ -986,13 +1160,8 @@ if (snapshot !== "true" && snapshot !== true) {
 
   changeImageInput.addEventListener("change", (e) => handleChangeImageUpload(e, items[currentItemCM]));
 
-  document.addEventListener("click", function () {
-    contextMenu.style.display = "none";
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
-    document.body.style.userSelect = "none"; // Disable selection for the whole document
-  });
+  document.addEventListener("click", () => (contextMenu.style.display = "none"));
+  document.addEventListener("DOMContentLoaded", () => (document.body.style.userSelect = "none"));
 
   changeImageBtn.addEventListener("click", () => changeImageInput.click());
 
@@ -1001,7 +1170,6 @@ if (snapshot !== "true" && snapshot !== true) {
     if (areChangesSaved.value) {
       window.parent.postMessage({ type: "unsaved changes", gameId: urlParams.get("gameid"), url: window.location.origin }, parentUrl);
       areChangesSaved.value = false;
-      toggleSaveChangesBtn();
     }
 
     handleTitleInput();
@@ -1013,7 +1181,6 @@ if (snapshot !== "true" && snapshot !== true) {
     if (areChangesSaved.value) {
       window.parent.postMessage({ type: "unsaved changes", gameId: urlParams.get("gameid"), url: window.location.origin }, parentUrl);
       areChangesSaved.value = false;
-      toggleSaveChangesBtn();
     }
 
     handleDescriptionInput;
@@ -1034,25 +1201,16 @@ if (snapshot !== "true" && snapshot !== true) {
   window.addEventListener("message", function (event) {
     // Always check the origin of the message for security purposes
     if (event.origin === parentUrl) {
-      if (event.data.type === "game data") {
-        initializeGame(event.data.gameData);
-      } else if (event.data.type === "game data request") {
-        saveGame(null, "game data request");
-      } else if (event.data.type === "enable button") {
+      if (event.data.type === "game data") initializeGame(event.data.gameData);
+      else if (event.data.type === "game data request") saveGame(null, "game data request");
+      else if (event.data.type === "enable button") {
         areChangesSaved.value = false;
         toggleSaveChangesBtn();
       }
-    } else {
-      console.error("Untrusted origin:", event.origin);
-    }
+    } else console.error("Untrusted origin:", event.origin);
   });
 
-  // Initialize the game
-  // initializeGame();
-
-  if (urlParams.get("isediting") === "true") {
-    editModeBtn.click();
-  }
+  if (urlParams.get("isediting") === "true") editModeBtn.click();
 
   // Hide the edit mode button if the game is not being edited
   if (urlParams.get("isediting") === "false") editModeBtn.style.display = "none";

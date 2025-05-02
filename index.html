@@ -14,13 +14,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Chewy&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&display=swap" rel="stylesheet" />
 
-  <title>Join the Words</title>
+  <title>Gator Game</title>
 </head>
 
 <body>
   <!-- Add the appropriate id to the div below -->
   <!-- Leave as is -->
-  <div id="whatsWrongHere" class="previewStyles">
+  <div id="GatorGame" class="previewStyles">
     <div class="container">
       <!-- Canvas for pixel perfect clicks & screenshots -->
       <canvas id="gameCanvas" style="position: absolute; left: 0px; top: 0px; opacity: 0" width="1024"
@@ -38,44 +38,44 @@
       <div
         style="cursor: default; position: absolute; left: 0px; top: 100px; width: 1024px; display: flex; justify-content: center; text-align: center; z-index: 4001; color: #d3d3d3">
         <h1 id="title"
-          style="word-wrap: break-word; display: none; font-weight: 450; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 80px">
-          Join The Words
+          style="word-wrap: break-word; display: none; font-weight: 450; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 80px; margin-top: 30px">
+          Gator Game</h1>
       </div>
 
       <!-- Description -->
       <div id="description"
         style="cursor: default; position: absolute; left: 120px; top: 290px; font-weight: 400; font-size: 45px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 4001; color: #d3d3d3; word-wrap: break-word; width: 800px; display: none">
-        See the picture, check letters, and fill in the blanks!</div>
+        You will drag words from word pool into the correct category as it seems fit.</div>
 
       <!-- Refresh Button -->
       <img id="refreshBtn" src="./assets/images/refreshButton.webp"
-        style="position: absolute; left: -90px; top: 50px; cursor: pointer; z-index: 4001; display: none" width="60"
+        style="position: absolute; left: -65px; top: 50px; cursor: pointer; z-index: 4001; display: none" width="60"
         height="60" />
 
       <!-- Edit Mode Button -->
       <img id="editModeBtn" src="./assets/images/editButton.webp"
-        style="position: absolute; left: -90px; top: 150px; cursor: pointer; z-index: 4001" width="60" height="60" />
+        style="position: absolute; left: -65px; top: 150px; cursor: pointer; z-index: 4001" width="60" height="60" />
 
       <!--  Settings Button -->
       <img id="settingsBtn" src="./assets/images/settingsButton.webp"
-        style="position: absolute; left: -90px; top: 250px; cursor: pointer; z-index: 4001; display: none" width="60"
+        style="position: absolute; left: -65px; top: 250px; cursor: pointer; z-index: 4001; display: none" width="60"
         height="60" />
 
       <!-- Add Button -->
       <img id="addItemsBtn" src="./assets/images/addButton.webp"
-        style="position: absolute; left: -90px; top: 350px; cursor: pointer; z-index: 4001; display: none" width="60"
+        style="position: absolute; left: -65px; top: 350px; cursor: pointer; z-index: 4001; display: none" width="60"
         height="60" />
 
       <!--  Delete Button -->
       <img id="deleteBtn" src="./assets/images/deleteButton.webp"
-        style="position: absolute; left: -90px; top: 450px; cursor: pointer; z-index: 9999; display: none" width="60"
+        style="position: absolute; left: -65px; top: 450px; cursor: pointer; z-index: 9999; display: none" width="60"
         height="60" />
       <div id="binTooltipRectangle"
-        style="position: absolute; left: -80px; top: 520px; width: 0; height: 0; z-index: 4000; display: none; border-left: 25px solid transparent; border-right: 25px solid transparent; border-bottom: 50px solid rgb(30, 30, 30)">
+        style="position: absolute; left: -60px; top: 520px; width: 0; height: 0; z-index: 4000; display: none; border-left: 25px solid transparent; border-right: 25px solid transparent; border-bottom: 50px solid rgb(30, 30, 30)">
       </div>
       <div id="binTooltip"
-        style="position: absolute; left: -100px; top: 550px; z-index: 4001; cursor: default; z-index: 4001; font-weight: 250; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 30px; padding: 15px; display: none; background-color: rgb(30, 30, 30); color: #d3d3d3; border: 1px solid #d3d3d3">
-        Drop an element on the bin to delete it!</div>
+        style="position: absolute; left: -60px; top: 550px; z-index: 4001; cursor: default; z-index: 4001; font-weight: 250; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 30px; padding: 15px; display: none; background-color: rgb(30, 30, 30); color: #d3d3d3; border: 1px solid #d3d3d3">
+        Drop a word on the bin to delete it and click to delete category!</div>
 
       <!--  Save Button -->
       <img id="saveBtn" src="./assets/images/saveButton.webp"
@@ -83,7 +83,7 @@
         height="60" />
 
       <!-- Button -->
-      <div id="btnDiv" style="position: absolute; left: 50px; top: 50px; display: inline-block; z-index: 4002">
+      <div id="btnDiv" style="position: absolute; left: 50px; top: 50px; display: inline-block; z-index: 4001">
         <div id="resizeBox0TL"
           style="position: absolute; left: -6px; top: -6px; width: 14px; height: 14px; cursor: nwse-resize; visibility: hidden; border-radius: 100%; background-color: white; border: 1px solid red; z-index: 4001">
         </div>
@@ -97,193 +97,231 @@
           style="position: absolute; right: -6px; bottom: -6px; width: 14px; height: 14px; cursor: nwse-resize; visibility: hidden; border-radius: 100%; background-color: white; border: 1px solid red; z-index: 4001">
         </div>
 
-        <img id="btn" src="./assets/images/infoDark.webp"
+        <img id="btn" src="./assets/infoDark.webp"
           style="cursor: pointer; border: 1px solid transparent; width: 60px; height: 60px" />
       </div>
 
 
-      <!-- Items -->
-      <div id="gameContainer" style="display: flex;flex-direction: column; gap: 10px;">
+      <!-- Word Pool -->
+      <div id="wordPool" class="word-pool"
+        style="position: absolute; max-width: 800px; top: 50px; left: 50%; transform: translateX(-50%); z-index: 3999">
+        <h1 style="text-align: center; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Word
+          Pool</h1>
+        <div id="scoreDisplay" style="text-align: center; color: yellow; font-size: 24px; margin-top: 10px;">
+          Score: 0
+        </div>
 
-      </div>
+        <!-- Category Table -->
+        <div id="categoryTable"
+          style="position: absolute; top: 300px; left: 50%; transform: translateX(-50%); z-index: 4001; width: 80%; display: flex; flex-direction: column">
+          <div id="categoryTableHead" style="display: flex; width: 100%"></div>
+          <div id="categoryTableBody" style="display: flex; width: 100%"></div>
+        </div>
 
+        <div id="deletePanel" class="delete-panel">
+          <h3 id="deleteCategoryHeading">Delete Category</h3>
+          <label for="deleteCategoryDropdown">Select Category:</label>
+          <select id="deleteCategoryDropdown" class="delete-category-dropdown"></select>
 
-
-      <!-- Items Left -->
-      <div id="itemsLeftNumber"
-        style="position: absolute; left: 205px; top: 59px; font-weight: 500; font-size: 38px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 10; cursor: default">
-      </div>
-
-      <!-- Settings Screen -->
-      <div id="settingsScreen" class="settings-screen">
-        <span id="settingsCloseBtn" class="close-icon">&times;</span>
-
-        <!-- Images Section -->
-        <div class="settings-section">
-          <h1 class="settings-section-title">Background Image</h1>
-          <div class="image-upload-container">
-            <img id="bgImage" src="assets/background.webp" class="image-upload-preview" />
-            <label for="bgImgInput" class="custom-button">Upload Image</label>
-            <input type="file" id="bgImgInput" accept="image/*" class="image-upload-input" />
+          <div class="button-group">
+            <button id="confirmDeleteCategoryBtn" class="confirm-delete-btn">Delete</button>
+            <button id="cancelDeleteBtn" class="cancel-delete-btn">Cancel</button>
           </div>
         </div>
 
-        <!-- Tooltip Section -->
-        <div class="settings-section">
-          <h1 class="settings-section-title">Tooltip Button Visibility</h1>
-          <div class="tooltip-button-container">
-            <div class="toggle-button-wrapper">
-              <span id="btnOff" class="custom-whiteAndOff-button"
-                style="position: absolute; font-size: 30px; top: 20px; left: 30px">Off</span>
-              <span id="btnOn" class="custom-button" style="margin-left: 180px; font-size: 30px">On</span>
+        <!-- Items Left -->
+        <div id="itemsLeft" style="display: none"></div>
+        <div id="itemsLeftNumber" style="display: none; opacity: 0"></div>
+
+        <!-- Settings Screen -->
+        <div id="settingsScreen" class="settings-screen" style="top: -50px; left: -165px">
+          <span id="settingsCloseBtn" style="top: 20px; left: 800px" class="close-icon">&times;</span>
+
+          <!-- Images Section -->
+          <div class="settings-section">
+            <h1 class="settings-section-title">Background Image</h1>
+
+            <div class="image-upload-container">
+              <img id="bgImage" src="assets/background.webp" class="image-upload-preview" />
+              <label for="bgImgInput" class="custom-button">Upload Image</label>
+              <input type="file" id="bgImgInput" accept="image/*" class="image-upload-input" />
             </div>
           </div>
 
-          <h1 class="settings-section-title">Tooltip Button Color</h1>
-          <div class="tooltip-button-container">
-            <div class="toggle-button-wrapper">
-              <span id="btnWhite" class="custom-whiteAndOff-button"
-                style="position: absolute; font-size: 30px; top: 20px; left: 30px">White</span>
-              <span id="btnBlack" class="custom-button" style="margin-left: 180px; font-size: 30px">Black</span>
+          <!-- Tooltip Section -->
+          <div class="settings-section">
+            <h1 class="settings-section-title">Tooltip Button Visibility</h1>
+
+            <div class="tooltip-button-container">
+              <div class="toggle-button-wrapper">
+                <span id="btnOff" class="custom-whiteAndOff-button"
+                  style="position: absolute; font-size: 30px; top: 20px; left: 30px">Off</span>
+                <span id="btnOn" class="custom-button" style="margin-left: 180px; font-size: 30px">On</span>
+              </div>
+            </div>
+
+            <h1 class="settings-section-title">Tooltip Button Color</h1>
+
+            <div class="tooltip-button-container">
+              <div class="toggle-button-wrapper">
+                <span id="btnWhite" class="custom-whiteAndOff-button"
+                  style="position: absolute; font-size: 30px; top: 20px; left: 30px">White</span>
+                <span id="btnBlack" class="custom-button" style="margin-left: 180px; font-size: 30px">Black</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sound Effects Section -->
+          <div class="settings-section">
+            <h1 class="settings-section-title">Sound Effects</h1>
+
+            <div class="sound-effect-row">
+              <h2 class="sound-effect-label">Tooltip Button Click</h2>
+
+              <div class="sound-effect-controls">
+                <audio id="audioElement1" src="assets/audio/click.mp3" controls class="sound-effect-audio"></audio>
+                <label for="audioInput1" class="custom-button" style="margin-left: 52%; margin-top: 10px">Upload
+                  Sound</label>
+                <input type="file" id="audioInput1" accept="audio/*" style="display: none" />
+              </div>
+            </div>
+
+            <div class="sound-effect-row">
+              <h2 class="sound-effect-label">Item Click</h2>
+
+              <div class="sound-effect-controls">
+                <audio id="audioElement2" src="assets/audio/collect.mp3" controls class="sound-effect-audio"></audio>
+                <label for="audioInput2" class="custom-button" style="margin-left: 52%; margin-top: 10px">Upload
+                  Sound</label>
+                <input type="file" id="audioInput2" accept="audio/*" style="display: none" />
+              </div>
+            </div>
+
+            <div class="sound-effect-row">
+              <h2 class="sound-effect-label">Win</h2>
+
+              <div class="sound-effect-controls">
+                <audio id="audioElement3" src="assets/audio/win2.mp3" controls class="sound-effect-audio"></audio>
+                <label for="audioInput3" class="custom-button" style="margin-left: 52%; margin-top: 10px">Upload
+                  Sound</label>
+                <input type="file" id="audioInput3" accept="audio/*" style="display: none" />
+              </div>
+            </div>
+
+            <div class="sound-effect-row">
+              <h2 class="sound-effect-label">Delete</h2>
+
+              <div class="sound-effect-controls">
+                <audio id="audioElement4" src="./assets/audios/delete.mp3" controls class="sound-effect-audio"></audio>
+                <label for="audioInput4" class="custom-button" style="margin-left: 52%; margin-top: 10px">Upload
+                  Sound</label>
+                <input type="file" id="audioInput4" accept="audio/*" style="display: none" />
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Sound Effects Section -->
-        <div class="settings-section">
-          <h1 class="settings-section-title">Sound Effects</h1>
+        <!-- Save Screen -->
+        <form id="saveScreen" class="screen">
+          <span id="saveCloseBtn" class="close-icon">&times;</span>
 
-          <div class="sound-effect-row">
-            <h2 class="sound-effect-label">Tooltip Button Click</h2>
-            <div class="sound-effect-controls">
-              <audio id="audioElement1" src="assets/audio/click.mp3" controls class="sound-effect-audio"></audio>
-              <label for="audioInput1" class="custom-button" style="margin-left: 52%; margin-top: 10px">Upload
-                Sound</label>
-              <input type="file" id="audioInput1" accept="audio/*" style="display: none" />
+          <!-- Name -->
+          <div class="flex-col" style="margin-top: 5rem">
+            <h1 class="settings-section-title">Name</h1>
+            <input id="nameInput" name="gameName" type="text" class="styled-input" required />
+          </div>
+
+          <!-- Description -->
+          <div class="flex-col">
+            <h1 class="settings-section-title">Description</h1>
+            <textarea name="gameDescription" id="descriptionBox" class="styled-textarea" required
+              style="font-size: 2rem"></textarea>
+          </div>
+
+          <!-- Category -->
+          <div class="flex-col">
+            <h1 class="settings-section-title">Category</h1>
+            <input id="categoryInput" name="gameCategory" type="text" class="styled-input" required />
+          </div>
+
+          <!-- Tags -->
+          <div class="flex-col">
+            <h1 class="settings-section-title">Tags</h1>
+
+            <div class="flex-row" style="gap: 1rem">
+              <input id="tagsInput" name="tagInput" type="text" class="styled-input" />
+              <label id="addTagBtn" for="tagsInput" type="button" class="custom-button"
+                style="height: fit-content; padding: 30px; font-size: 30px">Add</label>
             </div>
+
+            <div id="tags" class="flex-col"></div>
           </div>
 
-          <div class="sound-effect-row">
-            <h2 class="sound-effect-label">Item Click</h2>
-            <div class="sound-effect-controls">
-              <audio id="audioElement2" src="assets/audio/collect.mp3" controls class="sound-effect-audio"></audio>
-              <label for="audioInput2" class="custom-button" style="margin-left: 52%; margin-top: 10px">Upload
-                Sound</label>
-              <input type="file" id="audioInput2" accept="audio/*" style="display: none" />
+          <!-- Configurable Settings -->
+          <div class="flex-col">
+            <h1 class="settings-section-title">Configurable Settings</h1>
+
+            <div class="flex-row" style="gap: 1rem">
+              <input id="settingsInput" name="settingInput" type="text" class="styled-input" />
+              <label id="addSettingBtn" for="settingsInput" type="button" class="custom-button"
+                style="height: fit-content; padding: 30px; font-size: 30px">Add</label>
             </div>
+
+            <div id="configSettings" class="flex-col"></div>
           </div>
 
-          <div class="sound-effect-row">
-            <h2 class="sound-effect-label">Win</h2>
+          <!-- Save Button -->
+          <label id="saveGameBtn" type="submit" class="save-button">Save</label>
+          <div style="margin-bottom: 250px"></div>
+        </form>
 
-            <div class="sound-effect-controls">
-              <audio id="audioElement3" src="assets/audio/win2.mp3" controls class="sound-effect-audio"></audio>
-              <label for="audioInput3" class="custom-button" style="margin-left: 52%; margin-top: 10px">Upload
-                Sound</label>
-              <input type="file" id="audioInput3" accept="audio/*" style="display: none" />
-            </div>
+        <!-- Items Addition Screen -->
+        <div id="itemsAddition" class="itemAddScreen">
+          <span id="itemsAdditionCloseBtn" class="close-icon">&times;</span>
+          <h2 style="text-align: center">Add New Item</h2>
+
+          <div style="text-align: center; margin-bottom: 20px">
+            <label> <input type="radio" name="itemType" value="category" checked /> Add Category </label>
+            <label style="margin-left: 20px"> <input type="radio" name="itemType" value="word" /> Add Word </label>
           </div>
 
-          <div class="sound-effect-row">
-            <h2 class="sound-effect-label">Delete</h2>
-            <div class="sound-effect-controls">
-              <audio id="audioElement4" src="./assets/audios/delete.mp3" controls class="sound-effect-audio"></audio>
-              <label for="audioInput4" class="custom-button" style="margin-left: 52%; margin-top: 10px">Upload
-                Sound</label>
-              <input type="file" id="audioInput4" accept="audio/*" style="display: none" />
-            </div>
+          <!-- Category Input Section -->
+          <div id="categoryInputSection" style="margin-top: 20px">
+            <label for="newCategoryName" style="font-size: 18px">Category Name:</label>
+            <input type="text" id="newCategoryName" placeholder="e.g., Animals" class="text-input" />
+            <button id="addCategoryBtn" class="custom-button" style="margin-top: 10px">Add Category</button>
+          </div>
+
+          <!-- Word Input Section -->
+          <div id="wordInputSection" style="margin-top: 20px; display: none">
+            <label for="newWordText" style="font-size: 18px">Word:</label>
+            <input type="text" id="newWordText" placeholder="e.g., Tiger" class="text-input" />
+            <label for="categoryDropdown" style="font-size: 18px; margin-top: 10px">Assign to Category:</label>
+            <select id="categoryDropdown" class="text-input"></select>
+            <button id="addWordBtn" class="custom-button" style="margin-top: 10px">Add Word</button>
           </div>
         </div>
-      </div>
 
-      <!-- Save Screen -->
-      <form id="saveScreen" class="screen">
-        <span id="saveCloseBtn" class="close-icon">&times;</span>
-
-        <!-- Name -->
-        <div class="flex-col" style="margin-top: 5rem">
-          <h1 class="settings-section-title">Name</h1>
-          <input id="nameInput" name="gameName" type="text" class="styled-input" required />
+        <!-- Context Menu -->
+        <div id="contextMenu"
+          style="width: fit-content; z-index: 9999; font-weight: 250; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 30px; padding: 15px; display: none; background-color: rgb(30, 30, 30); color: #d3d3d3; border: 1px solid #d3d3d3">
+          <div class="menu-item" id="changeImage">Change Image</div>
         </div>
 
-        <!-- Description -->
-        <div class="flex-col">
-          <h1 class="settings-section-title">Description</h1>
-          <textarea name="gameDescription" id="descriptionBox" class="styled-textarea" required
-            style="font-size: 2rem"></textarea>
-        </div>
-
-        <!-- Category -->
-        <div class="flex-col">
-          <h1 class="settings-section-title">Category</h1>
-          <input id="categoryInput" name="gameCategory" type="text" class="styled-input" required />
-        </div>
-
-        <!-- Tags -->
-        <div class="flex-col">
-          <h1 class="settings-section-title">Tags</h1>
-          <div class="flex-row" style="gap: 1rem">
-            <input id="tagsInput" name="tagInput" type="text" class="styled-input" />
-            <label id="addTagBtn" for="tagsInput" type="button" class="custom-button"
-              style="height: fit-content; padding: 30px; font-size: 30px">Add</label>
-          </div>
-          <div id="tags" class="flex-col"></div>
-        </div>
-
-        <!-- Configurable Settings -->
-        <div class="flex-col">
-          <h1 class="settings-section-title">Configurable Settings</h1>
-          <div class="flex-row" style="gap: 1rem">
-            <input id="settingsInput" name="settingInput" type="text" class="styled-input" />
-            <label id="addSettingBtn" for="settingsInput" type="button" class="custom-button"
-              style="height: fit-content; padding: 30px; font-size: 30px">Add</label>
-          </div>
-          <div id="configSettings" class="flex-col"></div>
-        </div>
+        <input type="file" id="changeImageInput" accept="image/*" style="display: none" />
 
         <!-- Save Button -->
-        <label id="saveGameBtn" type="submit" class="save-button">Save</label>
+        <button id="saveChangesBtn" class="save-button" disabled
+          style="position: absolute; top: 900px; left: -150px; z-index: 9999; font-size: 35px; width: 1024px">Save
+          Changes</button>
 
-        <div style="margin-bottom: 250px"></div>
-      </form>
-
-      <!-- Items Addition Screen -->
-      <div id="itemsAddition" class="itemAddScreen">
-        <span id="itemsAdditionCloseBtn" class="close-icon">&times;</span>
-
-        <h1 class="settings-section-title">Add a new Item</h1>
-
-        <div class="image-upload-container">
-          <img id="addableImg" src="./assets/images/questionMark.webp" class="image-upload-preview" />
-          <label for="addableImgInput" class="custom-button">Upload Image</label>
-          <input type="file" id="addableImgInput" accept="image/*" class="image-upload-input" />
-        </div>
-
-        <!-- Accept Button -->
-        <label id="addItemBtn" type="submit" class="save-button">Add</label>
-        <div style="margin-bottom: 200px"></div>
-
+        <!-- Audios -->
+        <audio preload="auto" id="collectSound" src="./assets/audio/collect.mp3"></audio>
+        <audio preload="auto" id="winSound" src="./assets/audio/win2.mp3"></audio>
+        <audio preload="auto" id="wrongSound" src="./assets/audios/wrong.mp3"></audio>
+        <audio preload="auto" id="clickSound" src="./assets/audio/click.mp3"></audio>
+        <audio preload="auto" id="deleteSound" src="./assets/audios/delete.mp3"></audio>
       </div>
-
-      <!-- Context Menu -->
-      <div id="contextMenu"
-        style="width: fit-content; z-index: 9999; font-weight: 250; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 30px; padding: 15px; display: none; background-color: rgb(30, 30, 30); color: #d3d3d3; border: 1px solid #d3d3d3">
-        <div class="menu-item" id="changeImage">Change Image</div>
-      </div>
-
-      <input type="file" id="changeImageInput" accept="image/*" style="display: none" />
-
-      <!-- Save Button -->
-      <button id="saveChangesBtn" class="save-button" disabled
-        style="position: absolute; bottom: -130px; left: 0px; z-index: 9999; font-size: 35px; width: 1024px">Save
-        Changes</button>
-
-      <!-- Audios -->
-      <audio preload="auto" id="collectSound" src="assets/audio/collect.mp3"></audio>
-      <audio preload="auto" id="winSound" src="assets/audio/win2.mp3"></audio>
-      <audio preload="auto" id="wrongSound" src="./assets/audios/wrong.mp3"></audio>
-      <audio preload="auto" id="clickSound" src="assets/audio/click.mp3"></audio>
-      <audio preload="auto" id="deleteSound" src="./assets/audios/delete.mp3"></audio>
     </div>
   </div>
 
@@ -307,7 +345,15 @@
 
           // Use requestAnimationFrame to wait for the canvas update to be completed & send the screenshot
           requestAnimationFrame(() => {
-            window.parent.postMessage({ type: "screenshot", data: canvas.toDataURL(), id: urlParams.get("id"), url: window.location.origin }, parentUrl);
+            window.parent.postMessage(
+              {
+                type: "screenshot",
+                data: canvas.toDataURL(),
+                id: urlParams.get("id"),
+                url: window.location.origin,
+              },
+              parentUrl
+            );
           });
         }
       }
@@ -436,10 +482,8 @@
     });
 
     // Variables to store touch positions
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchEndX = 0;
-    let touchEndY = 0;
+    let touchStartX, touchStartY, touchEndX, touchEndY;
+    touchStartX = touchStartY = touchEndX = touchEndY = 0;
 
     // Threshold to determine a valid swipe (in pixels)
     const swipeThreshold = 200;
@@ -478,7 +522,7 @@
     });
 
     // Get the div defined above by its id
-    var div = document.getElementById("whatsWrongHere");
+    var div = document.getElementById("GatorGame");
 
     // Initiailze size variables for the above div based on what game settings the Author has set
     var targetWidth = urlParams.get("tw");
@@ -518,30 +562,6 @@
     // Determine if the game needs to be played at this point
     var snapshot = urlParams.get("snapshot");
     if (snapshot === "true") captureScreenshot();
-
-    function populateNextEmptyInput(letter, parentDiv) {
-      // Get all the letter-input elements within the same parent div
-      const inputs = parentDiv.querySelectorAll('.letter-input');
-      for (const input of inputs) {
-        if (input.value === '') {
-          input.value = letter;
-          break;
-        }
-      }
-    }
-
-    // Add click listeners to all blocks
-    document.querySelectorAll('span[data-letter]').forEach(block => {
-      block.addEventListener('click', () => {
-        const letter = block.getAttribute('data-letter');
-
-        // Find the parent div of the clicked letter block
-        const parentDiv = block.closest('.item1, .item2,.item3'); // Adjust the selector to match the div class
-
-        populateNextEmptyInput(letter, parentDiv);
-      });
-    });
-
   </script>
 
   <script src="script.js" type="module"></script>
