@@ -1,11 +1,11 @@
 import { handleAudioUpload } from "./modules/audioUpload.js";
-import { handleItemContextMenu } from "./modules/contextMenu.js";
-import { handleDragStart, handleDragEnd } from "./modules/dragHandlers.js";
+// import { handleItemContextMenu } from "./modules/contextMenu.js";
+// import { handleDragStart, handleDragEnd } from "./modules/dragHandlers.js";
 import { handleEditModeButtonClick, handleSettingsButtonClick, handleSettingsCloseButtonClick, handleAddItemsButtonClick, handleAddItemsCloseButtonClick, handleSaveButtonClick, handleSaveCloseButtonClick, addTagOrSetting } from "./modules/editMode.js";
 import { handleSingleImageUpload, handleChangeImageUpload, handleImageUpload } from "./modules/imageUpload.js";
 import { handleResizeStart } from "./modules/resizeHandlers.js";
 import { handleButtonClick, handleDescriptionInput, handleDescriptionKeyDown, handleTitleInput, handleTitleKeyDown, btnOffHandler, btnOnHandler, btnBlackHandler, btnWhiteHandler } from "./modules/tooltip.js";
-import { playSound, hideScreen, handleDownScaling, handleUpScaling, handleElementClick, disallowDelete } from "./modules/utils.js";
+import { playSound, pauseSound, hideScreen, handleDownScaling, handleUpScaling, handleElementClick, addItemOnScreen, disallowDelete } from "./modules/utils.js";
 const Data = [
   {
     image: "./assets/apple.webp",
@@ -47,87 +47,6 @@ const Data = [
     letterColors: ["#27ae60", "#3498db", "#9b59b6", "#e74c3c", "#f39c12", "#e67e22"],
   },
 ];
-// ------------------ //
-//  HELPER FUNCTIONS  //
-// ------------------ //
-// const handleItemClick = (item) => {
-//   pauseSound(collectSound);
-
-//   if (isItemCollected[items.indexOf(item)]) return;
-
-//   isItemCollected[items.indexOf(item)] = true;
-//   remainingItems--;
-
-//   // Game won
-//   if (remainingItems === 0) {
-//     winSound.play();
-//     btn.style.display = itemsLeftNumber.style.display = itemsLeft.style.display = "none";
-//   }
-
-//   // Game not won yet
-//   else collectSound.play();
-
-//   itemsLeftNumber.innerHTML = remainingItems;
-
-//   // Animate the decrease in opacity of the item
-//   for (let j = 0; j <= 100; j++) {
-//     setTimeout(() => {
-//       item.style.opacity = 1 - j / 100;
-
-//       // After opacity reaches 0, set display to none
-//       if (j === 100) {
-//         item.style.display = "none";
-//       }
-//     }, j * 3);
-//   }
-// };
-
-// ---------------- //
-//  ITEMS ADDITION  //
-// ---------------- //
-// const handleAddItems = async (existingImg, imgScale) => {
-//   await addItemOnScreen({ items, itemDivs, isAddingItems, itemsAdditionScreen, type: "item", addableImg: existingImg ? existingImg : addableImg, resizeBoxes, allowItemMove, allowItemResize, lastScales, isInitializing: existingImg ? true : false });
-
-//   // Add all event listeners now
-//   let x = itemDivs.length - 1;
-
-//   // Update the remaining items count
-//   if (!existingImg) {
-//     remainingItems += 1;
-//     itemsLeftNumber.innerHTML = remainingItems;
-//   }
-
-//   // Update the scale of the image
-//   else if (imgScale) {
-//     lastScales[x] = imgScale;
-//     itemDivs[x].style.transformOrigin = "0 0";
-//     itemDivs[x].style.transform = `scale(${lastScales[x]})`;
-//   }
-
-//   isItemCollected.push(false);
-
-//   itemDivs[x].addEventListener("mousedown", (e) => {
-//     if (isTooltipOpen.value || !isEditing.value) return;
-//     handleDragStart(e, { i: x, targetDiv: itemDivs[x], isDragging, isResizing, gameWon, savedX, savedY, allowItemMove, teleporationFix, deltaX, deltaY, isEditing, type: "item", placeBack: true, btnLastX, btnLastY });
-//   });
-
-//   itemDivs[x].addEventListener("mouseup", (e) => {
-//     if (isTooltipOpen.value || !isEditing.value) return;
-//     handleDragEnd(e, { i: x, targetDiv: itemDivs[x], isDragging, isResizing, gameWon, savedX, savedY, allowItemMove, teleporationFix, deltaX, deltaY, isEditing, type: "item", placeBack: true, btnLastX, btnLastY });
-//   });
-
-//   itemDivs[x].addEventListener("click", () => handleElementClick({ currSelectedElement, element: itemDivs[x], isEditing, isTooltipOpen }));
-
-//   items[x].addEventListener("click", () => {
-//     if (isEditing.value) return;
-//     handleItemClick(items[x]);
-//   });
-
-//   resizeBoxes[x * 4].addEventListener("mousedown", (e) => handleResizeStart(e, { i: x, direction: "TL", isResizing, lastScales, allowItemResize, resizeLastX, item: items[x], itemDiv: itemDivs[x], lastDirection, resizeScale }));
-//   resizeBoxes[x * 4 + 1].addEventListener("mousedown", (e) => handleResizeStart(e, { i: x, direction: "TR", isResizing, lastScales, allowItemResize, resizeLastX, item: items[x], itemDiv: itemDivs[x], lastDirection, resizeScale }));
-//   resizeBoxes[x * 4 + 2].addEventListener("mousedown", (e) => handleResizeStart(e, { i: x, direction: "BL", isResizing, lastScales, allowItemResize, resizeLastX, item: items[x], itemDiv: itemDivs[x], lastDirection, resizeScale }));
-//   resizeBoxes[x * 4 + 3].addEventListener("mousedown", (e) => handleResizeStart(e, { i: x, direction: "BR", isResizing, lastScales, allowItemResize, resizeLastX, item: items[x], itemDiv: itemDivs[x], lastDirection, resizeScale }));
-// };
 
 function addItemsDynamically() {
   const container = document.getElementById("gameContainer"); // The parent container for your items
@@ -143,6 +62,14 @@ function addItemsDynamically() {
     divItem.style.display = "inline-block";
     divItem.style.position = "relative";
     divItem.style.justifyContent = "space-between";
+    divItem.setAttribute("draggable", "true");
+    divItem.dataset.index = index; // Store original index
+
+    // Add drag event listeners
+    divItem.addEventListener("dragstart", handleDivItem);
+    divItem.addEventListener("dragover", handleDivItemDragOver);
+    divItem.addEventListener("drop", handleDivItemDrop);
+    divItem.addEventListener("dragend", handleDivItemDragEnd);
 
     // Create the delete button
     const deleteButton = document.createElement("div");
@@ -319,6 +246,89 @@ function addItemsDynamically() {
     container.appendChild(divItem);
   });
 }
+let draggedItem = null;
+
+function enableColorChangeForContextMenu(event) {
+  const contextMenu = document.getElementById("ButtonColor");
+  const colorPicker = document.getElementById("changeColoR");
+  const divItem2 = document.getElementById("checkResultsBtn");
+
+  // Position the color picker near the context menu
+  const contextMenuRect = contextMenu.getBoundingClientRect();
+  colorPicker.style.left = "500px";
+  colorPicker.style.top = "800px";
+
+  // Show the color picker
+  colorPicker.style.display = "block";
+
+  // Event listener for color change
+  colorPicker.addEventListener("input", (e) => {
+    const newColor = e.target.value;
+    divItem2.style.backgroundColor = newColor; // Change the background color of divItem2
+  });
+
+  // Hide the context menu after a color is selected
+  colorPicker.addEventListener("change", () => {
+    contextMenu.style.display = "none"; // Hide the context menu after the color is selected
+    colorPicker.style.display = "none"; // Optionally hide the color picker after use
+  });
+
+  // Also hide the context menu if the user clicks outside
+  document.addEventListener("click", (e) => {
+    if (!contextMenu.contains(e.target) && !colorPicker.contains(e.target)) {
+      contextMenu.style.display = "none"; // Hide context menu if clicked outside
+      colorPicker.style.display = "none"; // Hide color picker if clicked outside
+    }
+  });
+}
+
+// Trigger the context menu and color picker
+document.getElementById("checkResultsBtn").addEventListener("contextmenu", (e) => {
+  e.preventDefault();
+  enableColorChangeForContextMenu(e); // Pass the event to the function
+});
+
+function handleDivItem(e) {
+  draggedItem = this;
+  e.dataTransfer.effectAllowed = "move";
+}
+
+function handleDivItemDragOver(e) {
+  e.preventDefault();
+}
+
+function handleDivItemDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (draggedItem !== this) {
+    const container = document.getElementById("gameContainer");
+
+    const draggedIndex = parseInt(draggedItem.dataset.index);
+    const dropIndex = parseInt(this.dataset.index);
+
+    // Update DOM order
+    if (draggedIndex < dropIndex) {
+      container.insertBefore(draggedItem, this.nextSibling);
+    } else {
+      container.insertBefore(draggedItem, this);
+    }
+
+    // Reorder Data array
+    const movedItem = Data.splice(draggedIndex, 1)[0];
+    Data.splice(dropIndex, 0, movedItem);
+
+    // Re-index all divs
+    [...container.children].forEach((child, i) => {
+      child.dataset.index = i;
+    });
+  }
+}
+
+function handleDivItemDragEnd() {
+  this.style.opacity = "1";
+}
+
 document.getElementById("itemLetters").addEventListener("input", () => {
   const container = document.getElementById("colorPickersContainer");
   container.innerHTML = ""; // Clear old inputs
@@ -494,6 +504,7 @@ addItemsDynamically();
 //     resizeBoxes[index * 4 + i].style.display = "none";
 //   }
 // };
+
 function checkAnswer(index) {
   const item = Data[index];
   const container = document.getElementById("gameContainer");
@@ -908,15 +919,14 @@ if (snapshot !== "true" && snapshot !== true) {
   // ------------------- //
 
   // Items
-  for (let i = 0; i <= 1; i++) {
+  for (let i = 0; i <= 2; i++) {
     const itemDiv = document.getElementById(`divItem${i}`);
     if (!itemDiv) continue;
-
     itemDivs.push(itemDiv);
     items.push(itemDiv);
     isItemCollected.push(false);
   }
-
+  console.log(items);
   // Resize Boxes
   for (let i = 0; i < items.length; i++) {
     resizeBoxes.push(document.getElementById(`resizeBox${i}TL`));
@@ -985,7 +995,6 @@ if (snapshot !== "true" && snapshot !== true) {
   editModeBtns.push(addItemsBtn);
   editModeBtns.push(settingsBtn);
   editModeBtns.push(saveBtn);
-  editModeBtns.push(deleteBtn);
 
   // editModeBtn.addEventListener("click", () => handleEditModeButtonClick({ clickSound, isEditing, items, resizeBoxes, showTooltip, isTooltipOpen, btnDiv, editModeBtns, currSelectedElement, settingsScreen, btnClicks, binTooltip, binTooltipRectangle }));
   editModeBtn.addEventListener("click", () => {
@@ -1185,9 +1194,7 @@ if (snapshot !== "true" && snapshot !== true) {
 
   // On Board Images Resizing
   for (let i = 0; i < resizeBoxes.length; i++) {
-    console.log(resizeBoxes[i]);
-    console.log(itemDivs[i]);
-    console.log(isResizing);
+    console.log(resizeBoxes.length);
     resizeBoxes[i].addEventListener("mousedown", (e) => handleResizeStart(e, { i: parseInt(i / 4), direction: i % 4 === 0 ? "TL" : i % 4 === 1 ? "TR" : i % 4 === 2 ? "BL" : "BR", isResizing, lastScales, allowItemResize, resizeLastX, item: items[parseInt(i / 4)], itemDiv: itemDivs[parseInt(i / 4)], lastDirection, resizeScale }));
   }
 
@@ -1200,10 +1207,6 @@ if (snapshot !== "true" && snapshot !== true) {
   }
 
   changeImageInput.addEventListener("change", (e) => handleChangeImageUpload(e, items[currentItemCM]));
-
-  document.addEventListener("click", function () {
-    contextMenu.style.display = "none";
-  });
 
   document.addEventListener("DOMContentLoaded", () => {
     document.body.style.userSelect = "none"; // Disable selection for the whole document

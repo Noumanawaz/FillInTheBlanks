@@ -73,11 +73,7 @@
       <div id="binTooltipRectangle"
         style="position: absolute; left: -80px; top: 520px; width: 0; height: 0; z-index: 4000; display: none; border-left: 25px solid transparent; border-right: 25px solid transparent; border-bottom: 50px solid rgb(30, 30, 30)">
       </div>
-      <div id="binTooltip"
-        style="position: absolute; left: -100px; top: 550px; z-index: 4001; cursor: default; z-index: 4001; font-weight: 250; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 30px; padding: 15px; display: none; background-color: rgb(30, 30, 30); color: #d3d3d3; border: 1px solid #d3d3d3">
-        Drop an element on the bin to delete it!</div>
-
-      <!--  Save Button -->
+      <!-- Save Button -->
       <img id="saveBtn" src="./assets/images/saveButton.webp"
         style="position: absolute; left: -90px; top: 550px; cursor: pointer; z-index: 4001; display: none" width="60"
         height="60" />
@@ -110,23 +106,39 @@
           style="position: absolute; left: -410px; top: -10px; width: 30px; height: 30px;visibility: hidden; cursor: nwse-resize;  border-radius: 100%; background-color: white; border: 1px solid red; z-index: 100;">
         </div>
         <div id="resizeBox1TR"
-          style="position: absolute; right: -400px; top: -10px; width: 30px; height: 30px;visibility: hidden; cursor: nesw-resize;  border-radius: 100%; background-color: white; border: 1px solid red;z-index: 100;">
+          style="position: absolute; right: -470px; top: -10px; width: 30px; height: 30px;visibility: hidden; cursor: nesw-resize;  border-radius: 100%; background-color: white; border: 1px solid red;z-index: 100;">
         </div>
         <div id="resizeBox1BL"
-          style="position: absolute; left: -410px; bottom: 50px; width: 30px; height: 30px;visibility: hidden; cursor: nesw-resize; border-radius: 100%; background-color: white; border: 1px solid red;z-index: 100;">
+          style="position: absolute; left: -410px; bottom: -20px; width: 30px; height: 30px;visibility: hidden; cursor: nesw-resize; border-radius: 100%; background-color: white; border: 1px solid red;z-index: 100;">
         </div>
         <div id="resizeBox1BR"
-          style="position: absolute; right: -390px; bottom: 50px; width: 30px; height: 30px;visibility: hidden; cursor: nwse-resize; border-radius: 100%; background-color: white; border: 1px solid red;z-index: 100;">
+          style="position: absolute; right: -470px; bottom: -20px; width: 30px; height: 30px;visibility: hidden; cursor: nwse-resize; border-radius: 100%; background-color: white; border: 1px solid red;z-index: 100;">
         </div>
 
         <div id="gameContainer" style="display: flex; flex-direction: column; gap: 10px;">
         </div>
+      </div>
+
+      <div id="divItem2" style="position: relative; display: inline-block;">
+        <div id="resizeBox2TL"
+          style="position: absolute; left: -10px; bottom: 30px; width: 15px; height: 15px;visibility: hidden; cursor: nwse-resize;  border-radius: 100%; background-color: white; border: 1px solid red; z-index: 100;">
+        </div>
+        <div id="resizeBox2TR"
+          style="position: absolute; right: -10px; bottom: 30px; width: 15px; height: 15px;visibility: hidden; cursor: nesw-resize;  border-radius: 100%; background-color: white; border: 1px solid red;z-index: 100;">
+        </div>
+        <div id="resizeBox2BL"
+          style="position: absolute; left: -10px; bottom: -2px; width: 10px; height: 10px;visibility: hidden; cursor: nesw-resize; border-radius: 100%; background-color: white; border: 1px solid red;z-index: 100;">
+        </div>
+        <div id="resizeBox2BR"
+          style="position: absolute; right: -10px; bottom: -2px; width: 10px; height: 10px;visibility: hidden; cursor: nwse-resize; border-radius: 100%; background-color: white; border: 1px solid red;z-index: 100;">
+        </div>
+
+
         <button id="checkResultsBtn"
-          style="margin-top: 20px; padding: 10px 20px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
+          style="margin-top: 800px; padding: 10px 20px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
           Check Results
         </button>
       </div>
-
 
 
 
@@ -209,7 +221,7 @@
           <div class="sound-effect-row">
             <h2 class="sound-effect-label">Delete</h2>
             <div class="sound-effect-controls">
-              <audio id="audioElement4" src="./assets/audio/delete.mp3" controls class="sound-effect-audio"></audio>
+              <audio id="audioElement4" src="./assets/audios/delete.mp3" controls class="sound-effect-audio"></audio>
               <label for="audioInput4" class="custom-button" style="margin-left: 52%; margin-top: 10px">Upload
                 Sound</label>
               <input type="file" id="audioInput4" accept="audio/*" style="display: none" />
@@ -270,8 +282,8 @@
       </form>
 
       <!-- Items Addition Screen -->
-      <div id="itemsAddition" class="itemAddScreen" style="display: none;">
-        <span id="itemsAdditionCloseBtn" class="close-icon">&times;</span>
+      <div id="itemsAddition" class="itemAddScreen" style="display: none; height: 95%; width: 95%;">
+        <span id="itemsAdditionCloseBtn" style="height: 40px;" class="close-icon">&times;</span>
 
         <h1 class="settings-section-title">Add a New Item</h1>
 
@@ -302,18 +314,22 @@
         </div>
 
 
+        <audio id="addSound" src="./assets/audio/success.mp3" preload="auto"></audio>
 
         <label id="addItemBtn" class="save-button">Add</label>
       </div>
 
 
       <!-- Context Menu -->
-      <div id="contextMenu"
+      <div id="ButtonColor"
         style="width: fit-content; z-index: 9999; font-weight: 250; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 30px; padding: 15px; display: none; background-color: rgb(30, 30, 30); color: #d3d3d3; border: 1px solid #d3d3d3">
-        <div class="menu-item" id="changeImage">Change Image</div>
+        <div class="menu-item" id="changeColor">Change Background Color</div>
       </div>
 
-      <input type="file" id="changeImageInput" accept="image/*" style="display: none" />
+      <input type="color" id="changeColoR" style="display: none; position: absolute;" />
+
+
+
 
       <!-- Save Button -->
       <button id="saveChangesBtn" class="save-button" disabled
